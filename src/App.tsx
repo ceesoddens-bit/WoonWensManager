@@ -83,6 +83,7 @@ interface Match {
   features: string[];
   link: string;
   makelaar: string;
+  matchCriteria?: { label: string; client: string; house: string; match: boolean }[];
 }
 
 const MATCH_DATA = {
@@ -97,7 +98,14 @@ const MATCH_DATA = {
       shortSummary: "Prijs €€€ / Budget €€€€",
       features: ["4 slaapkamers mogelijk (3 regulier + zolder als 4e)", "Perceel 360 m² (grotere tuin dan gevraagd)"],
       link: "https://www.aquina.com/aanbod/woningaanbod/amstenrade/koop/huis-10067700-Parkstraat-9/",
-      makelaar: "Aquina Hollanders makelaars"
+      makelaar: "Aquina Hollanders makelaars",
+      matchCriteria: [
+        { label: "💰 Budget", client: "Max €350.000", house: "€335.000 k.k.", match: true },
+        { label: "🏠 Woningtype", client: "Halfvrijstaand / tweekapper", house: "Tweekapper", match: true },
+        { label: "📍 Regio", client: "Sittard / Nieuwstadt e.o.", house: "Amstenrade", match: true },
+        { label: "🛏 Slaapkamers", client: "Min. 3", house: "4 (incl. zolder)", match: true },
+        { label: "📏 Woonoppervlak", client: "~130 m²+", house: "135 m²", match: true }
+      ]
     },
     {
       id: 2,
@@ -108,7 +116,14 @@ const MATCH_DATA = {
       shortSummary: "Prijs € / Budget €€€",
       features: ["1 slaapkamer", "Geen tuin; eigen parkeerplaats + gezamenlijke berging"],
       link: "https://www.viadal.nl/aanbod/appartement-onze-lieve-vrouwestraat-46b-3-ospel/",
-      makelaar: "Via Dal makelaardij"
+      makelaar: "Via Dal makelaardij",
+      matchCriteria: [
+        { label: "💰 Budget", client: "Max €390.000", house: "€198.000 k.k.", match: true },
+        { label: "🏠 Woningtype", client: "Appartement / gelijkvloers", house: "Appartement", match: true },
+        { label: "🛏 Slaapkamers", client: "Min. 2", house: "1 slaapkamer", match: false },
+        { label: "📏 Woonoppervlak", client: "~80 m²+", house: "ca. 40 m²", match: false },
+        { label: "🌿 Tuin", client: "Gewenst", house: "Geen tuin", match: false }
+      ]
     },
     {
       id: 3,
@@ -119,7 +134,14 @@ const MATCH_DATA = {
       shortSummary: "Prijs €€ / Budget €€€",
       features: ["1 slaapkamer (3 kamers totaal; grote living biedt hobbyhoek)", "Geen tuin/garage; VvE/centrale verwarming aandachtspunt"],
       link: "https://makelaardij.fidus.nu/woningaanbod/boschstraat-85-d-in-maastricht/",
-      makelaar: "Fidus Makelaardij"
+      makelaar: "Fidus Makelaardij",
+      matchCriteria: [
+        { label: "💰 Budget", client: "Max €600.000", house: "€325.000 k.k.", match: true },
+        { label: "📍 Locatie", client: "Maastricht", house: "Maastricht", match: true },
+        { label: "🏠 Woningtype", client: "Tweekapper / vrijstaand", house: "Bovenwoning", match: false },
+        { label: "🛏 Slaapkamers", client: "Min. 3", house: "1 slaapkamer", match: false },
+        { label: "📅 Bouwjaar", client: "Voorkeur recent", house: "ca. 1800 (monument)", match: false }
+      ]
     },
     {
       id: 4,
@@ -708,6 +730,33 @@ const MatchCard: React.FC<{ match: Match }> = ({ match }) => {
               "{match.reason}"
             </p>
           </div>
+
+          {/* Match Criteria Comparison */}
+          {match.matchCriteria && match.matchCriteria.length > 0 && (
+            <div className="bg-white/50 rounded-2xl border border-slate-100 overflow-hidden">
+              <div className="px-5 pt-4 pb-2">
+                <h4 className="text-[10px] uppercase tracking-[0.2em] text-slate-400 font-black">Match Vergelijking</h4>
+              </div>
+              <div className="divide-y divide-slate-100">
+                {/* Header */}
+                <div className="grid grid-cols-[1fr_1fr_1fr] px-5 py-2 bg-slate-50">
+                  <span className="text-[10px] uppercase tracking-wider text-slate-400 font-bold">Criterium</span>
+                  <span className="text-[10px] uppercase tracking-wider text-slate-400 font-bold">Klant wil</span>
+                  <span className="text-[10px] uppercase tracking-wider text-slate-400 font-bold">Woning biedt</span>
+                </div>
+                {match.matchCriteria.map((c, i) => (
+                  <div key={i} className="grid grid-cols-[1fr_1fr_1fr] items-center px-5 py-3 hover:bg-slate-50/50 transition-colors">
+                    <span className="text-sm font-semibold text-slate-600">{c.label}</span>
+                    <span className="text-sm font-medium text-slate-700">{c.client}</span>
+                    <div className="flex items-center gap-2">
+                      <div className={`w-2 h-2 rounded-full flex-shrink-0 ${c.match ? 'bg-emerald-400' : 'bg-red-400'}`} />
+                      <span className={`text-sm font-bold ${c.match ? 'text-emerald-700' : 'text-red-600'}`}>{c.house}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Details Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
