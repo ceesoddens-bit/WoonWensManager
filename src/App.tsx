@@ -877,7 +877,7 @@ export default function App() {
                                   <span className="font-bold text-emerald-800">Volledig onderzoek beschikbaar</span>
                                 </div>
                                 <p className="text-emerald-700 text-sm leading-relaxed">
-                                  Laatste scan: 26 maart 2026 om 18:30
+
                                 </p>
                                 <button className="mt-3 w-full py-2 bg-emerald-600 text-white rounded-xl font-bold text-sm hover:bg-emerald-700 transition-colors shadow-sm">
                                   Bekijken / Downloaden
@@ -1220,7 +1220,7 @@ export default function App() {
                       <p className="text-slate-500 text-lg">Overzicht van de nieuwste woningen uit onze scans</p>
                     </div>
                     <div className="bg-slate-100 text-slate-600 px-6 py-3 rounded-2xl font-bold text-sm flex items-center gap-3 shadow-sm border border-slate-200">
-                      Laatste scan: 26 maart 2026 om 18:30
+
                     </div>
                   </div>
 
