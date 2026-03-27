@@ -453,6 +453,10 @@ const MatchIcon = ({ size = 24, strokeWidth = 1.5, className = "" }: any) => (
 );
 
 const HouseScanCard: React.FC<{ scan: HouseScan }> = ({ scan }) => {
+  const relevantMatches = MATCH_DATA.matches.filter(m => 
+    m.address.includes(scan.adres) && m.matchPercentage >= 50
+  );
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -503,6 +507,24 @@ const HouseScanCard: React.FC<{ scan: HouseScan }> = ({ scan }) => {
             </div>
           </div>
         </div>
+
+        {/* Match Notes */}
+        {relevantMatches.length > 0 && (
+          <div className="flex flex-col gap-2">
+            {relevantMatches.map(match => (
+              <div key={match.id} className="bg-emerald-50 border border-emerald-100 rounded-xl p-3 flex items-start gap-3">
+                <div className="mt-0.5 text-emerald-500">
+                  <MatchIcon size={16} strokeWidth={2.5} />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-emerald-800">
+                    Eventuele match met {match.clientName} ({match.matchPercentage}%)
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* Link Section (No Image) */}
         <div className="mt-2 bg-slate-50 rounded-xl border border-slate-200 p-4 flex items-center justify-between hover:bg-slate-100 transition-colors cursor-pointer group"
