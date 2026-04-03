@@ -19,7 +19,8 @@ import {
   Search,
   MessageSquare,
   Copy,
-  UserCheck
+  UserCheck,
+  RefreshCw
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -88,89 +89,7 @@ interface Match {
   matchCriteria?: { label: string; client: string; house: string; match: boolean }[];
 }
 
-const MATCH_DATA = {
-  datum: "2026-03-26T18:30:00.707+01:00",
-  matches: [
-    {
-      id: 1,
-      clientName: "Kenny Jeurissen",
-      address: "Parkstraat 9, Amstenrade",
-      matchPercentage: 90,
-      reason: "past qua woningtype (2-onder-1-kap), vraagprijs €335.000 binnen budget €350k, woonoppervlakte 135 m², grote achtertuin (ca.184 m²), garage en royale zolder als hobbyruimte. Kleine aandacht: energieklasse D (kan verbeteren).",
-      shortSummary: "Prijs €€€ / Budget €€€€",
-      features: ["4 slaapkamers mogelijk (3 regulier + zolder als 4e)", "Perceel 360 m² (grotere tuin dan gevraagd)"],
-      link: "https://www.aquina.com/aanbod/woningaanbod/amstenrade/koop/huis-10067700-Parkstraat-9/",
-      makelaar: "Aquina Hollanders makelaars",
-      matchCriteria: [
-        { label: "💰 Budget", client: "Max €350.000", house: "€335.000 k.k.", match: true },
-        { label: "🏠 Woningtype", client: "Halfvrijstaand / tweekapper", house: "Tweekapper", match: true },
-        { label: "📍 Regio", client: "Sittard / Nieuwstadt e.o.", house: "Amstenrade", match: true },
-        { label: "🛏 Slaapkamers", client: "Min. 3", house: "4 (incl. zolder)", match: true },
-        { label: "📏 Woonoppervlak", client: "~130 m²+", house: "135 m²", match: true }
-      ]
-    },
-    {
-      id: 2,
-      clientName: "Saskia Essers",
-      address: "Onze Lieve Vrouwestraat 46B 3, Ospel",
-      matchPercentage: 60,
-      reason: "vraagprijs €198.000 ruim binnen budget €390k, instapklaar, eigen parkeerplaats en berging. Nadelen: klein (ca.40 m²), 1 slaapkamer, geen expliciet levensloopbestendig ontwerp/grote verdieping. Gezamenlijke berging biedt beperkte hobbyruimte.",
-      shortSummary: "Prijs € / Budget €€€",
-      features: ["1 slaapkamer", "Geen tuin; eigen parkeerplaats + gezamenlijke berging"],
-      link: "https://www.viadal.nl/aanbod/appartement-onze-lieve-vrouwestraat-46b-3-ospel/",
-      makelaar: "Via Dal makelaardij",
-      matchCriteria: [
-        { label: "💰 Budget", client: "Max €390.000", house: "€198.000 k.k.", match: true },
-        { label: "🏠 Woningtype", client: "Appartement / gelijkvloers", house: "Appartement", match: true },
-        { label: "🛏 Slaapkamers", client: "Min. 2", house: "1 slaapkamer", match: false },
-        { label: "📏 Woonoppervlak", client: "~80 m²+", house: "ca. 40 m²", match: false },
-        { label: "🌿 Tuin", client: "Gewenst", house: "Geen tuin", match: false }
-      ]
-    },
-    {
-      id: 3,
-      clientName: "Irvina en Michel",
-      address: "Boschstraat 85D, Maastricht",
-      matchPercentage: 55,
-      reason: "locatie Maastricht prima en binnen budget €600k (vraag €325k), instapklaar en sfeervol. Maar woningtype = bovenwoning/appartement (niet tweekapper/vrijstaand). Hobbyruimte beperkt; woonkamer groot (42 m²) en extra kamer geeft enige flexibiliteit. Bouwjaar circa 1800 (monument) — handig voor sfeer, maar niet voor hun voorkeur.",
-      shortSummary: "Prijs €€ / Budget €€€",
-      features: ["1 slaapkamer (3 kamers totaal; grote living biedt hobbyhoek)", "Geen tuin/garage; VvE/centrale verwarming aandachtspunt"],
-      link: "https://makelaardij.fidus.nu/woningaanbod/boschstraat-85-d-in-maastricht/",
-      makelaar: "Fidus Makelaardij",
-      matchCriteria: [
-        { label: "💰 Budget", client: "Max €600.000", house: "€325.000 k.k.", match: true },
-        { label: "📍 Locatie", client: "Maastricht", house: "Maastricht", match: true },
-        { label: "🏠 Woningtype", client: "Tweekapper / vrijstaand", house: "Bovenwoning", match: false },
-        { label: "🛏 Slaapkamers", client: "Min. 3", house: "1 slaapkamer", match: false },
-        { label: "📅 Bouwjaar", client: "Voorkeur recent", house: "ca. 1800 (monument)", match: false }
-      ]
-    },
-    {
-      id: 4,
-      clientName: "Joost en Joe",
-      address: "Boschstraat 85D, Maastricht",
-      matchPercentage: 35,
-      reason: "locatie en prijs passen, maar harde eis van Joost & Joe: bouwjaar max 20 jaar en voorkeur voor vrijstaand/geschakeld/halfvrijstaand. Dit is een rijksmonument (ca.1800) bovenwoning — daarom lage match ondanks centrale locatie.",
-      shortSummary: "Prijs €€ / Budget €€€€",
-      features: ["1 slaapkamer, geen tuin, parkeren vergunning"],
-      link: "https://makelaardij.fidus.nu/woningaanbod/boschstraat-85-d-in-maastricht/",
-      makelaar: "Fidus Makelaardij"
-    },
-    {
-      id: 5,
-      clientName: "Saskia Essers",
-      address: "Hoogpoort 214, Weert",
-      matchPercentage: 20,
-      reason: "bron gaf alleen een captcha/doorverwijzing; geen woningdata beschikbaar. Kan niet eerlijk scoren zonder woonoppervlak, type en indeling. Mogelijk matcht beter of slechter—graag volledige pagina of gegevens.",
-      shortSummary: "Actie: stuur echte pagina/HTML of belangrijkste data",
-      features: ["Geen data beschikbaar"],
-      link: "https://www.koopklik.nl/woning/weert-hoogpoort-214/",
-      makelaar: "KoopKlik"
-    }
-  ]
-};
-
-// HOUSE_SCANS wordt nu dynamisch geladen van de server
+// MATCH_DATA en HOUSE_SCANS worden nu dynamisch geladen van de server
 
 const DUMMY_CUSTOMERS: Customer[] = [
   {
@@ -358,9 +277,9 @@ const MatchIcon = ({ size = 24, strokeWidth = 1.5, className = "" }: any) => (
   </svg>
 );
 
-const HouseScanCard: React.FC<{ scan: HouseScan }> = ({ scan }) => {
-  const relevantMatches = MATCH_DATA.matches.filter(m => 
-    m.address.includes(scan.adres) && m.matchPercentage >= 50
+const HouseScanCard: React.FC<{ scan: HouseScan, matches: any[] }> = ({ scan, matches }) => {
+  const relevantMatches = matches.filter(m => 
+    m.address && m.address.includes(scan.adres) && m.matchPercentage >= 50
   );
 
   const mapQuery = `${scan.adres}, ${scan.Plaats}`;
@@ -728,25 +647,53 @@ const MatchCard: React.FC<{ match: Match }> = ({ match }) => {
 export default function App() {
   const [activeView, setActiveView] = useState<View>('manager');
   const [houseScans, setHouseScans] = useState<HouseScan[]>([]);
+  const [matches, setMatches] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch('http://localhost:3001/api/scans');
-        const data = await response.json();
-        setHouseScans(data);
+        const [scansRes, matchesRes] = await Promise.all([
+          fetch('http://localhost:3001/api/scans'),
+          fetch('http://localhost:3001/api/matches')
+        ]);
+        
+        const scansData = await scansRes.json();
+        const matchesData = await matchesRes.json();
+        
+        setHouseScans(scansData);
+        setMatches(matchesData.matches || []);
       } catch (error) {
-        console.error('Error fetching scans:', error);
+        console.error('Error fetching data:', error);
       } finally {
         setLoading(false);
       }
     };
     
     fetchData();
-    // Optioneel: Elke minuut herladen voor live updates
+    // Fallback polling elke 30 seconden
     const interval = setInterval(fetchData, 30000);
-    return () => clearInterval(interval);
+
+    // Real-time SSE stream voor matches (nieuwe match = directe update)
+    const evtSource = new EventSource('http://localhost:3001/api/matches/stream');
+    evtSource.onmessage = (event) => {
+      try {
+        const newMatch = JSON.parse(event.data);
+        setMatches(prev => [newMatch, ...prev]);
+        console.log('📡 Nieuwe match ontvangen via SSE:', newMatch);
+      } catch (e) {
+        console.error('SSE parse fout:', e);
+      }
+    };
+    evtSource.onerror = () => {
+      // De browser herverbindt automatisch bij een verbroken verbinding
+      console.warn('SSE verbinding verbroken, poging tot herverbinding...');
+    };
+
+    return () => {
+      clearInterval(interval);
+      evtSource.close();
+    };
   }, []);
 
   const [selectedViewing, setSelectedViewing] = useState<{
@@ -756,6 +703,28 @@ export default function App() {
     details?: string;
   } | null>(null);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const refreshMatches = async () => {
+    setRefreshing(true);
+    try {
+      const res = await fetch('http://localhost:3001/api/fetch-n8n-matches');
+      const data = await res.json();
+      if (data.status === 'success') {
+        const matchesRes = await fetch('http://localhost:3001/api/matches');
+        const matchesData = await matchesRes.json();
+        setMatches(matchesData.matches || []);
+        alert('Matches succesvol ververst via n8n!');
+      } else {
+        alert('Geen nieuwe matches gevonden op n8n.');
+      }
+    } catch (error) {
+      console.error('Error refreshing matches:', error);
+      alert('Fout bij verversen matches.');
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   const SidebarIcon = ({ view, icon: Icon, label }: { view: View, icon: any, label: string }) => (
     <button
@@ -1234,7 +1203,7 @@ export default function App() {
                       </div>
                     ) : houseScans.length > 0 ? (
                       houseScans.map((scan) => (
-                        <HouseScanCard key={`${scan.ID}-${scan.adres}`} scan={scan} />
+                        <HouseScanCard key={`${scan.ID}-${scan.adres}`} scan={scan} matches={matches} />
                       ))
                     ) : (
                       <div className="text-center p-20 text-slate-400 font-medium">
@@ -1256,16 +1225,40 @@ export default function App() {
                       <h2 className="text-4xl font-bold text-[#2d3e50] mb-2">Klant Matches</h2>
                       <p className="text-slate-500 text-lg">AI-geanalyseerde matches op basis van klantprofielen</p>
                     </div>
-                    <div className="bg-amber-100 text-amber-700 px-6 py-3 rounded-2xl font-bold text-sm flex items-center gap-3 shadow-sm border border-amber-200">
-                      <Clock size={18} />
-                      Laatste update: 26-03-2026 18:30
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={refreshMatches}
+                        disabled={refreshing}
+                        className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-bold text-sm shadow-sm border transition-all ${
+                          refreshing 
+                          ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed'
+                          : 'bg-blue-600 text-white border-blue-700 hover:bg-blue-700 active:scale-95'
+                        }`}
+                      >
+                        <RefreshCw size={18} className={refreshing ? 'animate-spin' : ''} />
+                        {refreshing ? 'Verversen...' : 'Matches verversen'}
+                      </button>
+                      <div className="bg-amber-100 text-amber-700 px-6 py-3 rounded-2xl font-bold text-sm flex items-center gap-3 shadow-sm border border-amber-200">
+                        <Clock size={18} />
+                        Laatste update: {new Date().toLocaleDateString('nl-NL')} {new Date().toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })}
+                      </div>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 gap-8 pb-12">
-                    {MATCH_DATA.matches.map((match) => (
-                      <MatchCard key={match.id} match={match} />
-                    ))}
+                  <div className="flex flex-col gap-8 pb-12">
+                    {loading ? (
+                      <div className="flex justify-center p-20">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                      </div>
+                    ) : matches.length > 0 ? (
+                      matches.map((match: any) => (
+                        <MatchCard key={match.id} match={match} />
+                      ))
+                    ) : (
+                      <div className="text-center p-20 text-slate-400 font-medium">
+                        Geen matches gevonden. Zodra de analyzer draait verschijnen de matches hier.
+                      </div>
+                    )}
                   </div>
                 </motion.div>
               ) : null}
