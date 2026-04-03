@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Home,
   Users,
@@ -66,10 +66,12 @@ interface HouseScan {
   Makelaar: string;
   adres: string;
   Plaats: string;
+  Wijk?: string;
   Prijs: string;
   m2: string;
   "m2 perseel": string;
-  satus: string;
+  status: string;
+  satus?: string; // Voor compatibiliteit met oude data
   link: string;
 }
 
@@ -168,125 +170,7 @@ const MATCH_DATA = {
   ]
 };
 
-const HOUSE_SCANS: HouseScan[] = [
-  {
-    "row_number": 2,
-    "ID": "AQU67700",
-    "Datum": "26-03-2026",
-    "Makelaar": "Aquina Hollanders makelaars",
-    "adres": "Parkstraat 9",
-    "Plaats": "Amstenrade",
-    "Prijs": "€ 335.000,- k.k.",
-    "m2": "--",
-    "m2 perseel": "--",
-    "satus": "Beschikbaar",
-    "link": "https://www.aquina.com/aanbod/woningaanbod/amstenrade/koop/huis-10067700-Parkstraat-9/"
-  },
-  {
-    "row_number": 3,
-    "ID": "COR44845",
-    "Datum": "26-03-2026",
-    "Makelaar": "Corio Makelaars",
-    "adres": "Burgemeester Henssingel 11C",
-    "Plaats": "Valkenburg",
-    "Prijs": "€ 399.000,- k.k.",
-    "m2": "112 m²",
-    "m2 perseel": "--",
-    "satus": "Nieuw in verkoop",
-    "link": "https://www.coriomakelaars.nl/woningaanbod/koop/valkenburg/burgemeester-henssingel/11-c"
-  },
-  {
-    "row_number": 4,
-    "ID": "KOO26984",
-    "Datum": "26-03-2026",
-    "Makelaar": "Koopklik",
-    "adres": "Hoogpoort 214",
-    "Plaats": "Weert",
-    "Prijs": "€ 312.000,- k.k.",
-    "m2": "68 m²",
-    "m2 perseel": "--",
-    "satus": "Beschikbaar",
-    "link": "https://www.koopklik.nl/woning/weert-hoogpoort-214/"
-  },
-  {
-    "row_number": 5,
-    "ID": "M3M19086",
-    "Datum": "26-03-2026",
-    "Makelaar": "M3 Makelaars & Taxateurs",
-    "adres": "Hofstraat 9",
-    "Plaats": "Maasbracht",
-    "Prijs": "€ 725.000,- k.k.",
-    "m2": "233 m²",
-    "m2 perseel": "1580 m²",
-    "satus": "Beschikbaar",
-    "link": "https://www.m3makelaardij.nl/aanbod/woningaanbod/maasbracht/koop/huis-9819086-Hofstraat-9/"
-  },
-  {
-    "row_number": 6,
-    "ID": "MAR00003",
-    "Datum": "26-03-2026",
-    "Makelaar": "Marcant",
-    "adres": "Staai 3",
-    "Plaats": "Grevenbicht",
-    "Prijs": "€ 350.000 k.k.",
-    "m2": "--",
-    "m2 perseel": "--",
-    "satus": "--",
-    "link": "https://marcant.nl/woningaanbod/grevenbicht-staai-3/"
-  },
-  {
-    "row_number": 7,
-    "ID": "WAG00000",
-    "Datum": "26-03-2026",
-    "Makelaar": "Wagemans Wonen",
-    "adres": "Forum 44",
-    "Plaats": "Born",
-    "Prijs": "€ 450.000,-",
-    "m2": "120 m²",
-    "m2 perseel": "--",
-    "satus": "Onder bod",
-    "link": "https://wa-wo.nl/aanbod/born-forum-44/"
-  },
-  {
-    "row_number": 8,
-    "ID": "VIA00463",
-    "Datum": "26-03-2026",
-    "Makelaar": "ViaDAL",
-    "adres": "Onze Lieve Vrouwestraat 46B 3",
-    "Plaats": "Ospel",
-    "Prijs": "€ 198.000 k.k.",
-    "m2": "--",
-    "m2 perseel": "--",
-    "satus": "Te koop",
-    "link": "https://www.viadal.nl/aanbod/appartement-onze-lieve-vrouwestraat-46b-3-ospel/"
-  },
-  {
-    "row_number": 9,
-    "ID": "FID27126",
-    "Datum": "26-03-2026",
-    "Makelaar": "Fidus Makelaardij",
-    "adres": "Boschstraat 85D",
-    "Plaats": "Maastricht",
-    "Prijs": "€ 325.000 k.k.",
-    "m2": "--",
-    "m2 perseel": "--",
-    "satus": "Beschikbaar",
-    "link": "https://makelaardij.fidus.nu/woningaanbod/boschstraat-85-d-in-maastricht/"
-  },
-  {
-    "row_number": 10,
-    "ID": "DIO00001",
-    "Datum": "26-03-2026",
-    "Makelaar": "Dionne Makelaars",
-    "adres": "Valkenburg Hekerweg 44",
-    "Plaats": "Valkenburg",
-    "Prijs": "€ 445.000 k.k.",
-    "m2": "6.280 m²",
-    "m2 perseel": "--",
-    "satus": "Beschikbaar",
-    "link": "https://dionnemakelaars.nl/woning/valkenburg-hekerweg-44/"
-  }
-];
+// HOUSE_SCANS wordt nu dynamisch geladen van de server
 
 const DUMMY_CUSTOMERS: Customer[] = [
   {
@@ -479,90 +363,116 @@ const HouseScanCard: React.FC<{ scan: HouseScan }> = ({ scan }) => {
     m.address.includes(scan.adres) && m.matchPercentage >= 50
   );
 
+  const mapQuery = `${scan.adres}, ${scan.Plaats}`;
+  const mapUrl = `https://maps.google.com/maps?q=${encodeURIComponent(mapQuery)}&t=&z=14&ie=UTF8&iwloc=&output=embed`;
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="glass-card overflow-hidden border border-slate-300 p-6 hover:shadow-xl transition-shadow"
+      className="glass-card shadow-2xl border-none overflow-hidden hover:shadow-[#141e2b]/10 transition-all duration-500"
     >
-      <div className="flex flex-col gap-4">
-        {/* Header with Address and Price */}
-        <div className="flex flex-col md:flex-row justify-between items-start gap-4">
-          <div className="flex-1">
-            <div className="flex items-center gap-3 mb-1">
-              <h3 className="text-2xl font-bold text-[#2d3e50]">{scan.adres}</h3>
-              <span className={`px-3 py-1 rounded-full text-[10px] uppercase tracking-wider font-black shadow-sm ${scan.satus === 'Nieuw in verkoop' ? 'bg-red-500 text-white' :
-                  scan.satus === 'Onder bod' ? 'bg-amber-500 text-white' :
+      <div className="flex flex-col lg:flex-row min-h-[360px]">
+        {/* Left Side: Info */}
+        <div className="flex-1 p-8 flex flex-col gap-6">
+          {/* Header with Address and Price */}
+          <div className="flex flex-col md:flex-row justify-between items-start gap-4">
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-1">
+                <h3 className="text-2xl font-bold text-[#2d3e50]">{scan.adres}</h3>
+                <span className={`px-3 py-1 rounded-full text-[10px] uppercase tracking-wider font-black shadow-sm ${
+                    (scan.status || scan.satus) === 'Nieuw in verkoop' ? 'bg-red-500 text-white' :
+                    (scan.status || scan.satus) === 'Onder bod' ? 'bg-amber-500 text-white' :
                     'bg-blue-600 text-white'
-                }`}>
-                {scan.satus === '--' ? 'Beschikbaar' : scan.satus}
-              </span>
-            </div>
-            <p className="text-slate-500 font-medium text-lg">{scan.Plaats}</p>
-          </div>
-          <div className="text-left md:text-right">
-            <p className="text-3xl font-black text-blue-600">{scan.Prijs}</p>
-            <p className="text-xs text-slate-400 font-medium">Gescand op: {scan.Datum}</p>
-          </div>
-        </div>
-
-        {/* Info Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-4 border-y border-slate-100">
-          <div className="flex items-center gap-3 text-slate-600">
-            <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-xl">🏢</div>
-            <div>
-              <p className="text-[10px] uppercase tracking-wider text-slate-400 font-bold leading-none mb-1">Makelaar</p>
-              <p className="text-sm font-bold text-[#2d3e50]">{scan.Makelaar}</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3 text-slate-600">
-            <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-xl">📏</div>
-            <div>
-              <p className="text-[10px] uppercase tracking-wider text-slate-400 font-bold leading-none mb-1">Oppervlakte</p>
-              <p className="text-sm font-bold text-[#2d3e50]">
-                {scan.m2 !== '--' ? scan.m2 : 'N/A'}
-                {scan.m2 !== '--' && parseInt(scan.m2.replace(/[^0-9]/g, '')) > 350 && (
-                  <span className="text-amber-600 ml-1 text-[10px] font-medium">(waarschijnlijk perceel)</span>
-                )}
-                {scan["m2 perseel"] !== '--' ? ` (Perceel: ${scan["m2 perseel"]})` : ''}
+                  }`}>
+                  {(scan.status || scan.satus || '--') === '--' ? 'Beschikbaar' : (scan.status || scan.satus)}
+                </span>
+              </div>
+              <p className="text-slate-500 font-medium text-lg">
+                {scan.Plaats}{scan.Wijk ? ` • ${scan.Wijk}` : ''}
               </p>
             </div>
+            <div className="text-left md:text-right">
+              <p className="text-3xl font-black text-blue-600">{scan.Prijs}</p>
+              <p className="text-xs text-slate-400 font-medium uppercase tracking-widest">Scan: {scan.Datum}</p>
+            </div>
+          </div>
+
+          {/* Info Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-6 border-y border-slate-100">
+            <div className="flex items-center gap-4 text-slate-600">
+              <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-xl shadow-sm border border-slate-100">🏢</div>
+              <div>
+                <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold leading-none mb-1.5">Makelaar</p>
+                <p className="text-sm font-bold text-[#2d3e50]">{scan.Makelaar || 'N/A'}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-4 text-slate-600">
+              <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-xl shadow-sm border border-slate-100">📏</div>
+              <div>
+                <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold leading-none mb-1.5">Oppervlakte</p>
+                <p className="text-sm font-bold text-[#2d3e50]">
+                  {scan.m2 && scan.m2 !== '--' ? scan.m2 : 'N/A'}
+                  {scan.m2 && scan.m2 !== '--' && scan.m2.replace ? (
+                    parseInt(scan.m2.replace(/[^0-9]/g, '')) > 350 && (
+                      <span className="text-amber-600 ml-1 text-[10px] font-medium">(waarschijnlijk perceel)</span>
+                    )
+                  ) : null}
+                  {scan["m2 perseel"] && scan["m2 perseel"] !== '--' ? ` (Perceel: ${scan["m2 perseel"]})` : ''}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Match Notes */}
+          {relevantMatches.length > 0 && (
+            <div className="flex flex-col gap-2">
+              {relevantMatches.map(match => (
+                <div key={match.id} className="bg-emerald-50 border border-emerald-100 rounded-xl p-4 flex items-start gap-4">
+                  <div className="mt-1 text-emerald-500">
+                    <MatchIcon size={20} strokeWidth={2.5} />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-emerald-800">
+                      Top Match met {match.clientName} ({match.matchPercentage}%)
+                    </p>
+                    <p className="text-xs text-emerald-600 mt-0.5 line-clamp-1">{match.reason}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Link Section */}
+          <div className="mt-auto pt-4 flex flex-col sm:flex-row gap-3">
+            <button 
+              onClick={() => window.open(scan.link, '_blank')}
+              className="flex-1 py-4 bg-[#141e2b] text-white rounded-2xl font-bold flex items-center justify-center gap-3 hover:bg-slate-800 transition-all shadow-lg group"
+            >
+              <span>Woning bekijken</span>
+              <ExternalLink size={20} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+            </button>
+            <div className="hidden sm:flex items-center px-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl min-w-0 flex-1 text-center">
+               <p className="text-xs text-slate-400 font-medium truncate">{scan.link}</p>
+            </div>
           </div>
         </div>
 
-        {/* Match Notes */}
-        {relevantMatches.length > 0 && (
-          <div className="flex flex-col gap-2">
-            {relevantMatches.map(match => (
-              <div key={match.id} className="bg-emerald-50 border border-emerald-100 rounded-xl p-3 flex items-start gap-3">
-                <div className="mt-0.5 text-emerald-500">
-                  <MatchIcon size={16} strokeWidth={2.5} />
-                </div>
-                <div>
-                  <p className="text-sm font-bold text-emerald-800">
-                    Eventuele match met {match.clientName} ({match.matchPercentage}%)
-                  </p>
-                </div>
-              </div>
-            ))}
+        {/* Right Side: Map */}
+        <div className="w-full lg:w-[450px] h-[300px] lg:h-auto relative bg-slate-50 border-l border-slate-100 group">
+          <div className="absolute inset-0 grayscale-[0.2] contrast-[1.1] transition-all duration-700 group-hover:grayscale-0">
+            <iframe 
+              width="100%" 
+              height="100%" 
+              style={{ border: 0 }}
+              loading="lazy"
+              allowFullScreen
+              title={`Map for ${scan.adres}`}
+              src={mapUrl}
+            />
           </div>
-        )}
-
-        {/* Link Section (No Image) */}
-        <div className="mt-2 bg-slate-50 rounded-xl border border-slate-200 p-4 flex items-center justify-between hover:bg-slate-100 transition-colors cursor-pointer group"
-          onClick={() => window.open(scan.link, '_blank')}>
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors">
-              <ExternalLink size={20} />
-            </div>
-            <div className="min-w-0">
-              <p className="text-sm font-bold text-blue-600 truncate">{scan.link}</p>
-              <p className="text-xs text-slate-500">Klik om de volledige advertentie te openen</p>
-            </div>
-          </div>
-          <div className="hidden md:flex items-center gap-2 text-blue-600 font-bold text-sm">
-            Bekijken
-          </div>
+          {/* Subtle overlay to make it fit with the design */}
+          <div className="absolute inset-0 pointer-events-none ring-1 ring-inset ring-black/5" />
         </div>
       </div>
     </motion.div>
@@ -817,6 +727,28 @@ const MatchCard: React.FC<{ match: Match }> = ({ match }) => {
 
 export default function App() {
   const [activeView, setActiveView] = useState<View>('manager');
+  const [houseScans, setHouseScans] = useState<HouseScan[]>([]);
+  const [loading, setLoading] = useState(true);
+  
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch('http://localhost:3001/api/scans');
+        const data = await response.json();
+        setHouseScans(data);
+      } catch (error) {
+        console.error('Error fetching scans:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchData();
+    // Optioneel: Elke minuut herladen voor live updates
+    const interval = setInterval(fetchData, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
   const [selectedViewing, setSelectedViewing] = useState<{
     address: string;
     dateTime: string;
@@ -1296,9 +1228,19 @@ export default function App() {
                   </div>
 
                   <div className="grid grid-cols-1 gap-8 pb-12">
-                    {HOUSE_SCANS.map((scan) => (
-                      <HouseScanCard key={scan.ID} scan={scan} />
-                    ))}
+                    {loading ? (
+                      <div className="flex justify-center p-20">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                      </div>
+                    ) : houseScans.length > 0 ? (
+                      houseScans.map((scan) => (
+                        <HouseScanCard key={`${scan.ID}-${scan.adres}`} scan={scan} />
+                      ))
+                    ) : (
+                      <div className="text-center p-20 text-slate-400 font-medium">
+                        Geen scans gevonden. Nieuwe huizen verschijnen hier zodra de scraper draait.
+                      </div>
+                    )}
                   </div>
                 </motion.div>
               ) : activeView === 'matches' ? (
