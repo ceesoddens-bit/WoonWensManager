@@ -726,6 +726,29 @@ export default function App() {
     }
   };
 
+  const [refreshingScans, setRefreshingScans] = useState(false);
+
+  const refreshScans = async () => {
+    setRefreshingScans(true);
+    try {
+      const res = await fetch('http://localhost:3001/api/fetch-n8n-scans');
+      const data = await res.json();
+      if (data.status === 'success') {
+        const scansRes = await fetch('http://localhost:3001/api/scans');
+        const scansData = await scansRes.json();
+        setHouseScans(scansData);
+        alert(`Succesvol ${data.fetched} scan(s) binnengehaald via n8n!`);
+      } else {
+        alert('Geen nieuwe scans of data-formaat onjuist.');
+      }
+    } catch (error) {
+      console.error('Error fetching n8n scans:', error);
+      alert('Fout bij verversen scans.');
+    } finally {
+      setRefreshingScans(false);
+    }
+  };
+
   const SidebarIcon = ({ view, icon: Icon, label }: { view: View, icon: any, label: string }) => (
     <button
       onClick={() => setActiveView(view)}
@@ -1191,8 +1214,23 @@ export default function App() {
                       <h2 className="text-4xl font-bold text-[#2d3e50] mb-2">Nieuwste Huizen Scans</h2>
                       <p className="text-slate-500 text-lg">Overzicht van de nieuwste woningen uit onze scans</p>
                     </div>
-                    <div className="bg-slate-100 text-slate-600 px-6 py-3 rounded-2xl font-bold text-sm flex items-center gap-3 shadow-sm border border-slate-200">
-
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={refreshScans}
+                        disabled={refreshingScans}
+                        className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-bold text-sm shadow-sm border transition-all ${
+                          refreshingScans 
+                          ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed'
+                          : 'bg-emerald-600 text-white border-emerald-700 hover:bg-emerald-700 active:scale-95'
+                        }`}
+                      >
+                        <RefreshCw size={18} className={refreshingScans ? 'animate-spin' : ''} />
+                        {refreshingScans ? 'Verversen...' : 'Scans verversen'}
+                      </button>
+                      <div className="bg-slate-100 text-slate-600 px-6 py-3 rounded-2xl font-bold text-sm flex items-center gap-3 shadow-sm border border-slate-200">
+                        <Clock size={18} />
+                        Laatste update: {new Date().toLocaleDateString('nl-NL')}
+                      </div>
                     </div>
                   </div>
 

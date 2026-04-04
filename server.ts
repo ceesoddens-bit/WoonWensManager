@@ -157,26 +157,45 @@ function parseN8nMatches(tekst: string, datum: string): any[] {
 // 5. POST Webhooks
 app.post('/webhook', async (req, res) => {
   try {
-    const house = req.body;
-    console.log('--- Nieuwe Scan Webhook ---');
-    if (!house.Wijk || house.Wijk === 'Onbekend') {
-      house.Wijk = await getOfficialWijk(house.adres, house.Plaats);
-    }
-    house.status = house.status || house.satus || 'Beschikbaar';
-    house.m2 = house.m2 || '--';
-    house["m2 perseel"] = house["m2 perseel"] || '--';
-    house.Prijs = house.Prijs || 'Prijs op aanvraag';
-    house.Makelaar = house.Makelaar || 'Onbekende Makelaar';
-    if (!house.Datum) house.Datum = new Date().toLocaleDateString('nl-NL');
+    const data = req.body;
+    console.log('--- Nieuwe Scan Webhook ontvangen ---');
+    const houses = Array.isArray(data) ? data : [data];
+    console.log(`📡 Verwerken van ${houses.length} huiz(en)`);
 
     const scans = JSON.parse(fs.readFileSync(DATA_FILE, 'utf-8'));
-    const exists = scans.find((s: any) => s.adres === house.adres && s.Plaats === house.Plaats);
-    if (!exists) {
+    let addedCount = 0;
+
+    for (const house of houses) {
+      if (!house.adres || !house.Plaats) continue;
+
+      // Duplicate check
+      const exists = scans.find((s: any) => s.adres === house.adres && s.Plaats === house.Plaats);
+      if (exists) continue;
+
+      // Verrijk met wijk
+      if (!house.Wijk || house.Wijk === 'Onbekend') {
+        house.Wijk = await getOfficialWijk(house.adres, house.Plaats);
+      }
+
+      // Default waarden
+      house.status = house.status || house.satus || 'Beschikbaar';
+      house.m2 = house.m2 || '--';
+      house["m2 perseel"] = house["m2 perseel"] || '--';
+      house.Prijs = house.Prijs || 'Prijs op aanvraag';
+      house.Makelaar = house.Makelaar || 'Onbekende Makelaar';
+      if (!house.Datum) house.Datum = new Date().toLocaleDateString('nl-NL');
+
       scans.unshift(house);
+      addedCount++;
+    }
+
+    if (addedCount > 0) {
       fs.writeFileSync(DATA_FILE, JSON.stringify(scans, null, 2));
     }
-    res.json({ status: 'success', wijk: house.Wijk });
+
+    res.json({ status: 'success', added: addedCount, total: scans.length });
   } catch (err) {
+    console.error('Webhook Error:', err);
     res.status(500).json({ status: 'error' });
   }
 });
@@ -239,8 +258,76 @@ app.post('/webhook-n8n-match', async (req, res) => {
   }
 });
 
-// Poll n8n productie webhook en verwerk de response
+// Poll n8n productie webhooks en verwerk de response
 const N8N_WEBHOOK_URL = 'https://woonwensmakelaar.app.n8n.cloud/webhook/d20bd156-86c9-40ea-86aa-f92949d207e7match';
+const N8N_SCANS_WEBHOOK_URL = 'https://woonwensmakelaar.app.n8n.cloud/webhook/d20bd156-86c9-40ea-86aa-f92949d207e7';
+
+app.get('/api/fetch-n8n-scans', async (req, res) => {
+  try {
+    console.log('📡 Ophalen van n8n scans...');
+    const n8nRes = await fetch(N8N_SCANS_WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ trigger: 'fetch_latest', source: 'WoonWensManager' })
+    });
+
+    const n8nBody: any = await n8nRes.json();
+    console.log('n8n response status:', n8nRes.status);
+    
+    let houses = [];
+    if (Array.isArray(n8nBody)) {
+        houses = n8nBody;
+    } else if (typeof n8nBody === 'object' && n8nBody !== null) {
+        if (n8nBody.data && Array.isArray(n8nBody.data)) {
+             houses = n8nBody.data;
+        } else {
+             houses = [n8nBody];
+        }
+    }
+
+    if (!houses || houses.length === 0 || !houses[0].adres) {
+      return res.status(200).json({ status: 'no_data', raw: n8nBody, message: 'n8n gaf geen scans terug of in verkeerd formaat' });
+    }
+
+    let processed = [];
+    for (const house of houses) {
+        if (!house.adres || !house.Plaats) continue;
+        if (!house.Wijk || house.Wijk === 'Onbekend') {
+          house.Wijk = await getOfficialWijk(house.adres, house.Plaats);
+        }
+        house.status = house.status || house.satus || 'Beschikbaar';
+        house.m2 = house.m2 || '--';
+        house["m2 perseel"] = house["m2 perseel"] || '--';
+        Object.keys(house).forEach(k => {
+           if (k.toLowerCase().includes('prijs')) {
+               house.Prijs = house[k];
+           }
+        });
+        
+        // Format Prijs
+        if (typeof house.Prijs === 'number') {
+            house.Prijs = '€ ' + house.Prijs.toLocaleString('nl-NL');
+        } else if (typeof house.Prijs === 'string' && !house.Prijs.includes('€') && !isNaN(Number(house.Prijs))) {
+            house.Prijs = '€ ' + Number(house.Prijs).toLocaleString('nl-NL');
+        } else if (typeof house.Prijs === 'string' && !house.Prijs.includes('€')) {
+            house.Prijs = '€ ' + house.Prijs;
+        }
+        
+        house.Prijs = house.Prijs || 'Prijs op aanvraag';
+        house.Makelaar = house.Makelaar || 'Onbekende Makelaar';
+        if (!house.Datum) house.Datum = new Date().toLocaleDateString('nl-NL');
+        processed.push(house);
+    }
+    
+    // We override everything since the user wants *exactly* what the webhook sends
+    fs.writeFileSync(DATA_FILE, JSON.stringify(processed, null, 2));
+    
+    res.json({ status: 'success', fetched: processed.length, scans: processed });
+  } catch (err: any) {
+    console.error('Fout bij ophalen n8n scans:', err.message);
+    res.status(500).json({ status: 'error', message: err.message });
+  }
+});
 
 app.get('/api/fetch-n8n-matches', async (req, res) => {
   try {
