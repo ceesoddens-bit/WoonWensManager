@@ -402,7 +402,7 @@ const HouseScanCard: React.FC<{ scan: HouseScan, matches: any[] }> = ({ scan, ma
   );
 };
 
-const MatchCard: React.FC<{ match: Match, klanten?: any[] }> = ({ match, klanten = [] }) => {
+const MatchCard: React.FC<{ match: Match, klanten?: any[], scans?: any[] }> = ({ match, klanten = [], scans = [] }) => {
   let klant = klanten.find((k: any) => k.Naam && match.clientName && (k.Naam.includes(match.clientName) || match.clientName.includes(k.Naam.split(' ')[0])));
   if (!klant && klanten.length > 0) klant = klanten[0]; // Fallback voor huidige testdata (bijv. "Renaldo1")
 
@@ -573,7 +573,9 @@ const MatchCard: React.FC<{ match: Match, klanten?: any[] }> = ({ match, klanten
                   <span className="text-[10px] uppercase tracking-wider text-slate-400 font-bold">Woning biedt</span>
                 </div>
                 {match.matchCriteria.map((c, i) => {
-                  let klantVerzoek = 'Niet gespecificeerd';
+                  let klantVerzoek = c.client === 'Volgens profiel' ? 'Niet specifiek aangevraagd' : c.client;
+                  let isMatch = c.match;
+
                   if (klant) {
                     if (c.label.includes('Regio') || c.label.includes('Locatie')) {
                       klantVerzoek = klant.Regio || 'Geen regio';
@@ -581,9 +583,11 @@ const MatchCard: React.FC<{ match: Match, klanten?: any[] }> = ({ match, klanten
                       klantVerzoek = klant.Prijsklasse || 'Geen budget';
                     } else if (c.label.includes('Woningtype') || c.label.includes('Type')) {
                       klantVerzoek = klant.Woningtype || 'Geen type';
-                    } else {
-                      klantVerzoek = klant['Bijzondere Kenmerken'] || 'Geen specifieke wensen ingevuld';
+                    } else if (c.label.includes('Slaapkamer') || c.label.includes('Kamer')) {
+                       // If Slaapkamers is mentioned, we can show their bijzondere kenmerken
+                       klantVerzoek = klant['Bijzondere Kenmerken'] || 'Niet expliciet vermeld';
                     }
+                    // For all other categories (Buitenruimte, Garage, Energie), leave it as 'Niet specifiek aangevraagd'
                   }
                   
                   return (
@@ -591,8 +595,8 @@ const MatchCard: React.FC<{ match: Match, klanten?: any[] }> = ({ match, klanten
                       <span className="text-sm font-semibold text-slate-600">{c.label}</span>
                       <span className="text-sm font-medium text-slate-700">{klantVerzoek}</span>
                       <div className="flex items-center gap-2">
-                        <div className={`w-2 h-2 rounded-full flex-shrink-0 ${c.match ? 'bg-emerald-400' : 'bg-red-400'}`} />
-                        <span className={`text-sm font-bold ${c.match ? 'text-emerald-700' : 'text-red-600'}`}>{c.house}</span>
+                        <div className={`w-2 h-2 rounded-full flex-shrink-0 ${isMatch ? 'bg-emerald-400' : 'bg-red-400'}`} />
+                        <span className={`text-sm font-bold ${isMatch ? 'text-emerald-700' : 'text-red-600'}`}>{c.house}</span>
                       </div>
                     </div>
                   );
@@ -1453,9 +1457,11 @@ export default function App() {
                         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
                       </div>
                     ) : matches.length > 0 ? (
-                      matches.map((match: any) => (
-                        <MatchCard key={match.id} match={match} klanten={klantenLijst} />
-                      ))
+                      [...matches]
+                        .sort((a, b) => b.matchPercentage - a.matchPercentage)
+                        .map((match: any) => (
+                          <MatchCard key={match.id} match={match} klanten={klantenLijst} scans={houseScans} />
+                        ))
                     ) : (
                       <div className="text-center p-20 text-slate-400 font-medium">
                         Geen matches gevonden. Zodra de analyzer draait verschijnen de matches hier.
