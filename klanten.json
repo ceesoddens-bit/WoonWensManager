@@ -1,0 +1,67 @@
+{
+  "klanten": [
+    {
+      "row_number": 2,
+      "Naam": "Kenny Jeurissen",
+      "Regio": "Sittard, Nieuwstadt en omstreken",
+      "Bijzonderheden Regio": "Ophoven, Overhoven, Nieuwstadt",
+      "Prijsklasse": "tot en met € 350.000,-",
+      "Woningtype": "Halfvrijstaand, tweekapper, vrijstaande woning",
+      "Bijzondere Kenmerken": "geen"
+    },
+    {
+      "row_number": 3,
+      "Naam": "Merel en Yerke",
+      "Regio": "Echt, Susteren, Roosteren, Nieuwstadt, Maasgouw, Ohe en Laak, Stevensweert en omstreken",
+      "Bijzonderheden Regio": "n.v.t.",
+      "Prijsklasse": "tot en met € 350.000,-",
+      "Woningtype": "tussenwoning, tweekapper, halfvrijstaand, vrijstaand",
+      "Bijzondere Kenmerken": "geen"
+    },
+    {
+      "row_number": 4,
+      "Naam": "Joost en Joe",
+      "Regio": "Maastricht",
+      "Bijzonderheden Regio": "Statenkwartier, Hoge Barakken, Lindenkruis",
+      "Prijsklasse": "tot en met € 850.000,-",
+      "Woningtype": "Vrijstaand, geschakelde woning, halfvrijstaande woning",
+      "Bijzondere Kenmerken": "bouwjaar maximaal 20 jaar oud"
+    },
+    {
+      "row_number": 5,
+      "Naam": "Bart Snel",
+      "Regio": "Spaubeek, Neerbeek, Beek, Sweikhuizen, Geleen, Puth en omstreken",
+      "Bijzonderheden Regio": "n.v.t.",
+      "Prijsklasse": "tot en met € 300.000,-",
+      "Woningtype": "Halfvrijstaand, tweekapper",
+      "Bijzondere Kenmerken": "Minimaal 3 slaapkamer"
+    },
+    {
+      "row_number": 6,
+      "Naam": "Irvina en Michel",
+      "Regio": "Maastricht",
+      "Bijzonderheden Regio": "Amby, Brusselsepoort, Caberg, De Heeg, Heer, Heugem, Oud-caberg, Randwyck, Scharn, Sint Pieter, Vroendaal",
+      "Prijsklasse": "tot en met € 600.000,-",
+      "Woningtype": "Tweekapper, 2-onder-1 kapwoning, vrijstaande woning",
+      "Bijzondere Kenmerken": "Instapklare woning, extra ruimte voor een hobbyruimte (mogelijke verbouwing garage)"
+    },
+    {
+      "row_number": 7,
+      "Naam": "Avital en Rico",
+      "Regio": "Geulle, Meerssen, Beek, Elsloo, Bunde en omstreken",
+      "Bijzonderheden Regio": "-",
+      "Prijsklasse": "tot en met € 1.000.000,-",
+      "Woningtype": "Vrijstaand",
+      "Bijzondere Kenmerken": "minimaal perceel van 2500 m2"
+    },
+    {
+      "row_number": 8,
+      "Naam": "Marly en Mitchell Takacs",
+      "Regio": "Vlodrop, Melick, Herkenbosch, St. Odilienberg, Posterholt, Maasniel, Hoogvonderen, Roer-zuid, Herten, Merum, Linne",
+      "Bijzonderheden Regio": "-",
+      "Prijsklasse": "-",
+      "Woningtype": "-",
+      "Bijzondere Kenmerken": "-"
+    }
+  ]
+}

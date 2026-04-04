@@ -20,9 +20,13 @@ import {
   MessageSquare,
   Copy,
   UserCheck,
-  RefreshCw
+  RefreshCw,
+  UserPlus,
+  ClipboardList
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+
+type View = 'nieuwste' | 'matches' | 'manager' | 'klanten';
 
 // Types for our data
 interface Viewing {
@@ -254,7 +258,7 @@ const DUMMY_CUSTOMERS: Customer[] = [
   }
 ];
 
-type View = 'nieuwste' | 'matches' | 'manager';
+
 
 const MatchIcon = ({ size = 24, strokeWidth = 1.5, className = "" }: any) => (
   <svg
@@ -644,25 +648,117 @@ const MatchCard: React.FC<{ match: Match }> = ({ match }) => {
   );
 };
 
+const KlantenView = ({ klanten, onAddKlant, refreshing, onRefresh }: { klanten: any[], onAddKlant: () => void, refreshing: boolean, onRefresh: () => void }) => {
+  return (
+    <motion.div
+      key="klanten-overzicht"
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -10 }}
+      className="space-y-6"
+    >
+      <div className="flex justify-between items-center bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+        <div>
+          <h2 className="text-2xl font-bold flex items-center gap-3 text-[#2d3e50]">
+            <UserPlus className="text-[#e67e22]" size={30} />
+            Klanten Profielen
+          </h2>
+          <p className="text-slate-500 text-sm mt-1">Beheer actieve zoekprofielen via de Google Sheet verbinding.</p>
+        </div>
+        <div className="flex gap-4">
+          <button
+            onClick={onRefresh}
+            disabled={refreshing}
+            className="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 px-5 py-3 rounded-xl font-bold transition-all disabled:opacity-50"
+          >
+            <RefreshCw size={20} className={refreshing ? 'animate-spin' : ''} />
+            Data Verversen
+          </button>
+          <button
+            onClick={onAddKlant}
+            className="flex items-center gap-2 bg-[#000000] hover:bg-slate-800 text-white px-5 py-3 rounded-xl font-bold transition-all shadow-md hover:shadow-lg"
+          >
+            <UserPlus size={20} />
+            Nieuw Profiel Toevoegen
+          </button>
+        </div>
+      </div>
+
+      {klanten.length === 0 ? (
+        <div className="bg-white p-12 rounded-2xl shadow-sm border border-slate-100 text-center text-slate-500">
+          <Users size={64} className="mx-auto mb-4 text-slate-300" />
+          <h3 className="text-xl font-bold text-slate-700 mb-2">Geen klanten gevonden</h3>
+          <p>Druk op de knop 'Data verversen' om de Google Sheet synchronisatie op te halen of voeg direct een nieuw profiel toe.</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {klanten.map((klant, idx) => (
+            <div key={idx} className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#e67e22] to-orange-400 flex items-center justify-center text-white font-bold text-lg shadow-sm">
+                  {klant.Naam ? klant.Naam.charAt(0).toUpperCase() : '?'}
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-[#2d3e50]">{klant.Naam || 'Naamloos Profiel'}</h3>
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold ring-1 ring-inset ring-emerald-600/20">
+                    Actief Profiel
+                  </span>
+                </div>
+              </div>
+              
+              <div className="space-y-4">
+                <div>
+                  <dt className="text-xs font-bold text-slate-400 tracking-wider uppercase mb-1">Budget</dt>
+                  <dd className="font-semibold text-slate-700">{klant.Prijsklasse || 'Niet ingevuld'}</dd>
+                </div>
+                <div>
+                  <dt className="text-xs font-bold text-slate-400 tracking-wider uppercase mb-1">Regio</dt>
+                  <dd className="text-sm font-medium text-slate-600 leading-relaxed">
+                    {klant.Regio || 'Niet ingevuld'}
+                    {klant['Bijzonderheden Regio'] && <span className="block text-slate-400 italic text-xs mt-0.5">{klant['Bijzonderheden Regio']}</span>}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-xs font-bold text-slate-400 tracking-wider uppercase mb-1">Woningtype & Wensen</dt>
+                  <dd className="text-sm font-medium text-slate-600 leading-relaxed">
+                    {klant.Woningtype || 'Geen woningtype'} • {klant['Bijzondere Kenmerken'] || 'Geen bijzondere kenmerken'}
+                  </dd>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </motion.div>
+  );
+};
+
 export default function App() {
   const [activeView, setActiveView] = useState<View>('nieuwste');
   const [houseScans, setHouseScans] = useState<HouseScan[]>([]);
   const [matches, setMatches] = useState<any[]>([]);
+  const [klantenLijst, setKlantenLijst] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [scansRes, matchesRes] = await Promise.all([
+        const [scansRes, matchesRes, klantenRes] = await Promise.all([
           fetch('http://localhost:3001/api/scans'),
-          fetch('http://localhost:3001/api/matches')
+          fetch('http://localhost:3001/api/matches'),
+          fetch('http://localhost:3001/api/klanten').catch(() => null)
         ]);
         
         const scansData = await scansRes.json();
-        const matchesData = await matchesRes.json();
-        
         setHouseScans(scansData);
-        setMatches(matchesData.matches || []);
+        
+        const matchesData = await matchesRes.json();
+        setMatches(matchesData?.matches || []);
+
+        if (klantenRes) {
+           const klantenData = await klantenRes.json();
+           setKlantenLijst(klantenData.klanten || []);
+        }
       } catch (error) {
         console.error('Error fetching data:', error);
       } finally {
@@ -727,6 +823,56 @@ export default function App() {
   };
 
   const [refreshingScans, setRefreshingScans] = useState(false);
+  const [showAddKlantModal, setShowAddKlantModal] = useState(false);
+  const [refreshingKlanten, setRefreshingKlanten] = useState(false);
+  const [newKlant, setNewKlant] = useState({ Naam: '', Regio: '', BijzonderhedenRegio: '', Prijsklasse: '', Woningtype: '', BijzondereKenmerken: '' });
+  const [submittingKlant, setSubmittingKlant] = useState(false);
+
+  const refreshKlanten = async () => {
+    setRefreshingKlanten(true);
+    try {
+      const res = await fetch('http://localhost:3001/api/fetch-klanten');
+      const data = await res.json();
+      if (data.status === 'success') {
+         setKlantenLijst(data.klanten);
+      } else {
+         alert(data.message || 'Geen data gevonden.');
+      }
+    } catch (e) {
+      alert('Fout bij ophalen klanten.');
+    } finally {
+      setRefreshingKlanten(false);
+    }
+  };
+
+  const handleAddKlant = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmittingKlant(true);
+    try {
+      // For now, post simulated or to backend (if backend endpoint exists)
+      const res = await fetch('http://localhost:3001/api/add-klant', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newKlant)
+      });
+      
+      const data = await res.json();
+      if (data.status === 'success') {
+         alert('Klant succesvol toegestuurd naar N8N!');
+         setShowAddKlantModal(false);
+         setNewKlant({ Naam: '', Regio: '', BijzonderhedenRegio: '', Prijsklasse: '', Woningtype: '', BijzondereKenmerken: '' });
+         // Automatically refresh the table after adding
+         refreshKlanten();
+      } else {
+         alert('Er is iets misgegaan: ' + data.message);
+      }
+    } catch (e) {
+      alert('Klant is verzonden, maar er was geen actieve N8N Webhook geconfigureerd hiervoor.');
+      setShowAddKlantModal(false);
+    } finally {
+      setSubmittingKlant(false);
+    }
+  };
 
   const refreshScans = async () => {
     setRefreshingScans(true);
@@ -775,7 +921,8 @@ export default function App() {
       <aside className="w-20 flex flex-col items-center py-8 bg-[#141e2b] gap-8 border-r border-slate-800">
         <SidebarIcon view="nieuwste" icon={Home} label="Nieuwste huizen" />
         <SidebarIcon view="matches" icon={MatchIcon} label="Matches" />
-        <SidebarIcon view="manager" icon={Users} label="Manager" />
+        <SidebarIcon view="klanten" icon={UserPlus} label="Klanten Profielen" />
+        <SidebarIcon view="manager" icon={ClipboardList} label="Manager" />
       </aside>
 
       {/* Main Content */}
@@ -1299,7 +1446,84 @@ export default function App() {
                     )}
                   </div>
                 </motion.div>
+              ) : activeView === 'klanten' ? (
+                <KlantenView 
+                   klanten={klantenLijst} 
+                   refreshing={refreshingKlanten} 
+                   onRefresh={refreshKlanten} 
+                   onAddKlant={() => setShowAddKlantModal(true)} 
+                />
               ) : null}
+            </AnimatePresence>
+            
+            {/* Add Klant Modal */}
+            <AnimatePresence>
+              {showAddKlantModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    onClick={() => setShowAddKlantModal(false)}
+                    className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+                  />
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                    className="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-200"
+                  >
+                    <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                      <h3 className="text-xl font-bold text-[#2d3e50] flex items-center gap-2">
+                        <UserPlus className="text-[#e67e22]" />
+                        Nieuw Zoekprofiel Toevoegen
+                      </h3>
+                      <button onClick={() => setShowAddKlantModal(false)} className="p-2 hover:bg-slate-200 rounded-full text-slate-500">
+                        <X size={20} />
+                      </button>
+                    </div>
+
+                    <form onSubmit={handleAddKlant} className="p-8 space-y-5">
+                      <div>
+                        <label className="block text-sm font-bold text-slate-700 mb-2">Naam / Achternaam *</label>
+                        <input required type="text" value={newKlant.Naam} onChange={e => setNewKlant({...newKlant, Naam: e.target.value})} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#e67e22] focus:border-[#e67e22] transition-all outline-none" placeholder="Bijv. Familie de Vries" />
+                      </div>
+                      <div className="grid grid-cols-2 gap-5">
+                        <div>
+                          <label className="block text-sm font-bold text-slate-700 mb-2">Maximum Budget *</label>
+                          <input required type="text" value={newKlant.Prijsklasse} onChange={e => setNewKlant({...newKlant, Prijsklasse: e.target.value})} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#e67e22] focus:border-[#e67e22] outline-none" placeholder="€ 450.000" />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-bold text-slate-700 mb-2">Woningtype</label>
+                          <input type="text" value={newKlant.Woningtype} onChange={e => setNewKlant({...newKlant, Woningtype: e.target.value})} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#e67e22] focus:border-[#e67e22] outline-none" placeholder="Vrijstaand, of 2-onder-1-kap" />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-bold text-slate-700 mb-2">Zoekregio *</label>
+                        <input required type="text" value={newKlant.Regio} onChange={e => setNewKlant({...newKlant, Regio: e.target.value})} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#e67e22] focus:border-[#e67e22] transition-all outline-none" placeholder="Maastricht, Beek, of omliggende dorpen" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-bold text-slate-700 mb-2">Bijzonderheden Regio</label>
+                        <input type="text" value={newKlant.BijzonderhedenRegio} onChange={e => setNewKlant({...newKlant, BijzonderhedenRegio: e.target.value})} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#e67e22] focus:border-[#e67e22] transition-all outline-none" placeholder="Bijv. buitenwijk, specifieke straten, afstanden..." />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-bold text-slate-700 mb-2">Bijzondere Kenmerken & Wensen</label>
+                        <textarea rows={3} value={newKlant.BijzondereKenmerken} onChange={e => setNewKlant({...newKlant, BijzondereKenmerken: e.target.value})} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#e67e22] focus:border-[#e67e22] transition-all outline-none" placeholder="Minimaal 4 slaapkamers, grote tuin, hobbyruimte..." />
+                      </div>
+                      
+                      <div className="pt-4 flex gap-4">
+                        <button type="button" onClick={() => setShowAddKlantModal(false)} className="flex-1 py-3.5 px-6 rounded-xl font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors">
+                          Annuleren
+                        </button>
+                        <button type="submit" disabled={submittingKlant} className="flex-1 py-3.5 px-6 rounded-xl font-bold bg-[#141e2b] text-white hover:bg-slate-800 transition-all flex justify-center items-center gap-2">
+                          {submittingKlant ? <RefreshCw size={20} className="animate-spin" /> : <UserPlus size={20} />}
+                          Profiel Opslaan
+                        </button>
+                      </div>
+                    </form>
+                  </motion.div>
+                </div>
+              )}
             </AnimatePresence>
           </div>
         </div>

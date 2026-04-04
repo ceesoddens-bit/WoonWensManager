@@ -8,6 +8,7 @@ const app = express();
 const port = 3001;
 const DATA_FILE = path.join(process.cwd(), 'scans.json');
 const MATCH_DATA_FILE = path.join(process.cwd(), 'matches.json');
+const KLANTEN_DATA_FILE = path.join(process.cwd(), 'klanten.json');
 
 app.use(cors());
 app.use(express.json());
@@ -15,6 +16,7 @@ app.use(express.json());
 // 1. Initialiseer bestanden
 if (!fs.existsSync(DATA_FILE)) fs.writeFileSync(DATA_FILE, JSON.stringify([], null, 2));
 if (!fs.existsSync(MATCH_DATA_FILE)) fs.writeFileSync(MATCH_DATA_FILE, JSON.stringify({ matches: [] }, null, 2));
+if (!fs.existsSync(KLANTEN_DATA_FILE)) fs.writeFileSync(KLANTEN_DATA_FILE, JSON.stringify({ klanten: [] }, null, 2));
 
 // SSE clients voor real-time matches updates
 let matchSseClients: any[] = [];
@@ -70,6 +72,66 @@ app.get('/api/matches', (req, res) => {
     res.json(data);
   } catch (err) {
     res.status(500).json({ error: 'Fout bij inladen matches' });
+  }
+});
+
+app.get('/api/klanten', (req, res) => {
+  try {
+    const data = JSON.parse(fs.readFileSync(KLANTEN_DATA_FILE, 'utf-8'));
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: 'Fout bij inladen klanten' });
+  }
+});
+
+const N8N_KLANTEN_WEBHOOK = 'https://woonwensmakelaar.app.n8n.cloud/webhook/69dda1df-46e0-4fc4-bcb8-cade9d33f5a8';
+
+app.get('/api/fetch-klanten', async (req, res) => {
+  try {
+    console.log('📡 Ophalen van n8n klanten profielen...');
+    // Request n8n workflow data
+    const n8nRes = await fetch(N8N_KLANTEN_WEBHOOK, { method: 'GET' });
+    const n8nBody: any = await n8nRes.json();
+    
+    // n8n returns array of arrays if from google sheets node
+    // Let's assume it returns an array of objects
+    if (Array.isArray(n8nBody) && n8nBody.length > 0) {
+      fs.writeFileSync(KLANTEN_DATA_FILE, JSON.stringify({ klanten: n8nBody }, null, 2));
+      return res.json({ status: 'success', fetched: n8nBody.length, klanten: n8nBody });
+    } else if (n8nBody.message && n8nBody.message.includes('Unused Respond to Webhook')) {
+      return res.status(200).json({ status: 'webhook_error', message: 'N8N Webhook is getriggerd, maar geeft geen data terug. Voeg een Respond to Webhook node toe!' });
+    }
+    
+    res.json({ status: 'no_data', message: 'Geen herkenbare data ontvangen', raw: n8nBody });
+  } catch (err: any) {
+    console.error('Fout bij ophalen n8n klanten profielen:', err.message);
+    res.status(500).json({ status: 'error', message: err.message });
+  }
+});
+
+// LET OP: Hiervoor moet de gebruiker een POST webhook aanmaken in N8N.
+const N8N_ADD_KLANT_WEBHOOK = 'https://woonwensmakelaar.app.n8n.cloud/webhook/e4488576-ecab-4b82-8196-b3922eba62de'; // Actieve Toevoegen Webhook
+
+app.post('/api/add-klant', async (req, res) => {
+  try {
+    const newKlant = req.body;
+    console.log('📡 Nieuw klantprofiel toevoegen via N8N...', newKlant);
+    
+    // We roepen de webhook aan (die de gebruiker idealiter bouwt om in Google Sheets te schrijven)
+    const n8nRes = await fetch(N8N_ADD_KLANT_WEBHOOK, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newKlant)
+    });
+    
+    if (n8nRes.ok) {
+       res.json({ status: 'success', message: 'Klant doorgezet naar N8N' });
+    } else {
+       res.status(500).json({ status: 'error', message: 'N8N gaf een foutmelding.' });
+    }
+  } catch (err: any) {
+    console.error('Fout bij toevoegen klant:', err.message);
+    res.status(500).json({ status: 'error', message: err.message });
   }
 });
 
