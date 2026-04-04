@@ -645,7 +645,7 @@ const MatchCard: React.FC<{ match: Match }> = ({ match }) => {
 };
 
 export default function App() {
-  const [activeView, setActiveView] = useState<View>('manager');
+  const [activeView, setActiveView] = useState<View>('nieuwste');
   const [houseScans, setHouseScans] = useState<HouseScan[]>([]);
   const [matches, setMatches] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);

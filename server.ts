@@ -179,8 +179,8 @@ app.post('/webhook', async (req, res) => {
 
       // Default waarden
       house.status = house.status || house.satus || 'Beschikbaar';
-      house.m2 = house.m2 || '--';
-      house["m2 perseel"] = house["m2 perseel"] || '--';
+      house.m2 = (house.m2 || '--').toString().replace(/&#178;/g, '²');
+      house["m2 perseel"] = (house["m2 perseel"] || '--').toString().replace(/&#178;/g, '²');
       house.Prijs = house.Prijs || 'Prijs op aanvraag';
       house.Makelaar = house.Makelaar || 'Onbekende Makelaar';
       if (!house.Datum) house.Datum = new Date().toLocaleDateString('nl-NL');
@@ -296,8 +296,8 @@ app.get('/api/fetch-n8n-scans', async (req, res) => {
           house.Wijk = await getOfficialWijk(house.adres, house.Plaats);
         }
         house.status = house.status || house.satus || 'Beschikbaar';
-        house.m2 = house.m2 || '--';
-        house["m2 perseel"] = house["m2 perseel"] || '--';
+        house.m2 = (house.m2 || '--').toString().replace(/&#178;/g, '²');
+        house["m2 perseel"] = (house["m2 perseel"] || '--').toString().replace(/&#178;/g, '²');
         Object.keys(house).forEach(k => {
            if (k.toLowerCase().includes('prijs')) {
                house.Prijs = house[k];
