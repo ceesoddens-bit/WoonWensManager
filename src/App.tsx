@@ -402,7 +402,10 @@ const HouseScanCard: React.FC<{ scan: HouseScan, matches: any[] }> = ({ scan, ma
   );
 };
 
-const MatchCard: React.FC<{ match: Match }> = ({ match }) => {
+const MatchCard: React.FC<{ match: Match, klanten?: any[] }> = ({ match, klanten = [] }) => {
+  let klant = klanten.find((k: any) => k.Naam && match.clientName && (k.Naam.includes(match.clientName) || match.clientName.includes(k.Naam.split(' ')[0])));
+  if (!klant && klanten.length > 0) klant = klanten[0]; // Fallback voor huidige testdata (bijv. "Renaldo1")
+
   const [messageModal, setMessageModal] = useState<{ title: string; message: string; type: 'makelaar' | 'klant' } | null>(null);
   const [editedMessage, setEditedMessage] = useState('');
   const [copied, setCopied] = useState(false);
@@ -556,14 +559,6 @@ const MatchCard: React.FC<{ match: Match }> = ({ match }) => {
             </div>
           </div>
 
-          {/* Analysis Section */}
-          <div className="bg-white/50 rounded-2xl p-5 border border-slate-100">
-            <h4 className="text-[10px] uppercase tracking-[0.2em] text-slate-400 font-black mb-3">Analyse & Reden</h4>
-            <p className="text-[#2d3e50] leading-relaxed italic text-lg">
-              "{match.reason}"
-            </p>
-          </div>
-
           {/* Match Criteria Comparison */}
           {match.matchCriteria && match.matchCriteria.length > 0 && (
             <div className="bg-white/50 rounded-2xl border border-slate-100 overflow-hidden">
@@ -577,16 +572,31 @@ const MatchCard: React.FC<{ match: Match }> = ({ match }) => {
                   <span className="text-[10px] uppercase tracking-wider text-slate-400 font-bold">Klant wil</span>
                   <span className="text-[10px] uppercase tracking-wider text-slate-400 font-bold">Woning biedt</span>
                 </div>
-                {match.matchCriteria.map((c, i) => (
-                  <div key={i} className="grid grid-cols-[1fr_1fr_1fr] items-center px-5 py-3 hover:bg-slate-50/50 transition-colors">
-                    <span className="text-sm font-semibold text-slate-600">{c.label}</span>
-                    <span className="text-sm font-medium text-slate-700">{c.client}</span>
-                    <div className="flex items-center gap-2">
-                      <div className={`w-2 h-2 rounded-full flex-shrink-0 ${c.match ? 'bg-emerald-400' : 'bg-red-400'}`} />
-                      <span className={`text-sm font-bold ${c.match ? 'text-emerald-700' : 'text-red-600'}`}>{c.house}</span>
+                {match.matchCriteria.map((c, i) => {
+                  let klantVerzoek = 'Niet gespecificeerd';
+                  if (klant) {
+                    if (c.label.includes('Regio') || c.label.includes('Locatie')) {
+                      klantVerzoek = klant.Regio || 'Geen regio';
+                    } else if (c.label.includes('Budget') || c.label.includes('Prijs')) {
+                      klantVerzoek = klant.Prijsklasse || 'Geen budget';
+                    } else if (c.label.includes('Woningtype') || c.label.includes('Type')) {
+                      klantVerzoek = klant.Woningtype || 'Geen type';
+                    } else {
+                      klantVerzoek = klant['Bijzondere Kenmerken'] || 'Geen specifieke wensen ingevuld';
+                    }
+                  }
+                  
+                  return (
+                    <div key={i} className="grid grid-cols-[1fr_1fr_1fr] items-center px-5 py-3 hover:bg-slate-50/50 transition-colors">
+                      <span className="text-sm font-semibold text-slate-600">{c.label}</span>
+                      <span className="text-sm font-medium text-slate-700">{klantVerzoek}</span>
+                      <div className="flex items-center gap-2">
+                        <div className={`w-2 h-2 rounded-full flex-shrink-0 ${c.match ? 'bg-emerald-400' : 'bg-red-400'}`} />
+                        <span className={`text-sm font-bold ${c.match ? 'text-emerald-700' : 'text-red-600'}`}>{c.house}</span>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}
@@ -734,12 +744,19 @@ const KlantenView = ({ klanten, onAddKlant, refreshing, onRefresh }: { klanten: 
 };
 
 export default function App() {
-  const [activeView, setActiveView] = useState<View>('nieuwste');
+  const [activeView, setActiveView] = useState<View>(() => {
+    const saved = localStorage.getItem('woonwensActiveView');
+    return (saved as View) || 'nieuwste';
+  });
   const [houseScans, setHouseScans] = useState<HouseScan[]>([]);
   const [matches, setMatches] = useState<any[]>([]);
   const [klantenLijst, setKlantenLijst] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   
+  useEffect(() => {
+    localStorage.setItem('woonwensActiveView', activeView);
+  }, [activeView]);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -1437,7 +1454,7 @@ export default function App() {
                       </div>
                     ) : matches.length > 0 ? (
                       matches.map((match: any) => (
-                        <MatchCard key={match.id} match={match} />
+                        <MatchCard key={match.id} match={match} klanten={klantenLijst} />
                       ))
                     ) : (
                       <div className="text-center p-20 text-slate-400 font-medium">

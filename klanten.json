@@ -49,7 +49,7 @@
       "row_number": 7,
       "Naam": "Avital en Rico",
       "Regio": "Geulle, Meerssen, Beek, Elsloo, Bunde en omstreken",
-      "Bijzonderheden Regio": "-",
+      "Bijzonderheden Regio": "n.v.t.",
       "Prijsklasse": "tot en met € 1.000.000,-",
       "Woningtype": "Vrijstaand",
       "Bijzondere Kenmerken": "minimaal perceel van 2500 m2"
@@ -58,10 +58,28 @@
       "row_number": 8,
       "Naam": "Marly en Mitchell Takacs",
       "Regio": "Vlodrop, Melick, Herkenbosch, St. Odilienberg, Posterholt, Maasniel, Hoogvonderen, Roer-zuid, Herten, Merum, Linne",
-      "Bijzonderheden Regio": "-",
-      "Prijsklasse": "-",
-      "Woningtype": "-",
-      "Bijzondere Kenmerken": "-"
+      "Bijzonderheden Regio": "n.v.t.",
+      "Prijsklasse": "tot en met € 470.000,-",
+      "Woningtype": "Vrijstaand of halfvrijstaand",
+      "Bijzondere Kenmerken": "oprit en garage"
+    },
+    {
+      "row_number": 9,
+      "Naam": "Saskia Essers",
+      "Regio": "Midden Limburg en Zuid Limburg",
+      "Bijzonderheden Regio": "n.v.t.",
+      "Prijsklasse": "tot en met € 390.000,-",
+      "Woningtype": "Levensloopbestendige woning, bungalow",
+      "Bijzondere Kenmerken": "n.v.t."
+    },
+    {
+      "row_number": 10,
+      "Naam": "Renaldo1",
+      "Regio": "Beek, Spaubeek",
+      "Bijzonderheden Regio": "n.v.t.",
+      "Prijsklasse": "tot en met € 950.000,-",
+      "Woningtype": "Alle woningtypes",
+      "Bijzondere Kenmerken": "n.v.t."
     }
   ]
 }
