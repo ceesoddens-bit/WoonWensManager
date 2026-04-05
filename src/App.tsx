@@ -406,6 +406,8 @@ const MatchCard: React.FC<{ match: Match, klanten?: any[], scans?: any[] }> = ({
   let klant = klanten.find((k: any) => k.Naam && match.clientName && (k.Naam.includes(match.clientName) || match.clientName.includes(k.Naam.split(' ')[0])));
   if (!klant && klanten.length > 0) klant = klanten[0]; // Fallback voor huidige testdata (bijv. "Renaldo1")
 
+  const matchHouse = scans.find((h: any) => match.address.startsWith(h.adres) || match.address.includes(h.adres) || (h.Plaats && match.address.includes(h.Plaats)));
+
   const [messageModal, setMessageModal] = useState<{ title: string; message: string; type: 'makelaar' | 'klant' } | null>(null);
   const [editedMessage, setEditedMessage] = useState('');
   const [copied, setCopied] = useState(false);
@@ -588,34 +590,24 @@ const MatchCard: React.FC<{ match: Match, klanten?: any[], scans?: any[] }> = ({
             </div>
           )}
 
-          {/* Details Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-3">
-              <h4 className="text-[10px] uppercase tracking-[0.2em] text-slate-400 font-black">Kenmerken</h4>
-              <ul className="space-y-2">
-                {match.features.map((feature, i) => (
-                  <li key={i} className="flex items-start gap-2 text-sm text-slate-600">
-                    <span className="text-emerald-500 mt-0.5">✓</span>
-                    <span className="font-medium">{feature}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className="space-y-3">
-              <h4 className="text-[10px] uppercase tracking-[0.2em] text-slate-400 font-black">Financieel</h4>
-              <div className="flex items-center gap-3 bg-slate-50 p-3 rounded-xl border border-slate-100">
-                <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
-                  <Gavel size={20} />
-                </div>
-                <div>
-                  <p className="text-xs text-slate-400 font-bold leading-none mb-1">Budget Check</p>
-                  <p className="text-sm font-bold text-[#2d3e50]">{match.shortSummary}</p>
-                </div>
+          {/* Right Side / Map (Minimal) */}
+          <div className="pt-4 mt-2">
+            <h4 className="text-[10px] uppercase tracking-[0.2em] text-slate-400 font-black mb-3">Woning Locatie</h4>
+            <div className="w-full h-[200px] sm:h-[250px] relative bg-slate-50 border border-slate-100 rounded-2xl overflow-hidden group">
+              <div className="absolute inset-0 grayscale-[0.2] contrast-[1.1] transition-all duration-700 group-hover:grayscale-0">
+                <iframe 
+                  width="100%" 
+                  height="100%" 
+                  style={{ border: 0 }}
+                  loading="lazy"
+                  allowFullScreen
+                  title={`Map for ${match.address}`}
+                  src={`https://www.google.com/maps?q=${encodeURIComponent(match.address)}&output=embed`}
+                />
               </div>
+              <div className="absolute inset-0 pointer-events-none ring-1 ring-inset ring-black/5" />
             </div>
           </div>
-
-          {/* Action Links */}
           <div className="pt-2 grid grid-cols-1 sm:grid-cols-3 gap-4">
             <button
               onClick={() => window.open(match.link, '_blank')}
