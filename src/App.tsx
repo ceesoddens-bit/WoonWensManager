@@ -93,7 +93,116 @@ interface Match {
   matchCriteria?: { label: string; client: string; house: string; match: boolean }[];
 }
 
-// MATCH_DATA en HOUSE_SCANS worden nu dynamisch geladen van de server
+// N8N Webhook URL's (Rechtstreekse verbinding)
+const N8N_SCANS_URL = 'https://woonwensmakelaar.app.n8n.cloud/webhook/d20bd156-86c9-40ea-86aa-f92949d207e7';
+const N8N_MATCHES_URL = 'https://woonwensmakelaar.app.n8n.cloud/webhook/d20bd156-86c9-40ea-86aa-f92949d207e7match';
+const N8N_KLANTEN_URL = 'https://woonwensmakelaar.app.n8n.cloud/webhook/69dda1df-46e0-4fc4-bcb8-cade9d33f5a8';
+const N8N_ADD_KLANT_URL = 'https://woonwensmakelaar.app.n8n.cloud/webhook/e4488576-ecab-4b82-8196-b3922eba62de';
+
+// --- Direct N8N Parsing Helpers ---
+
+// Helper voor PDOK Wijk Lookup (nu in de frontend)
+async function getOfficialWijk(adres: string, plaats: string): Promise<string> {
+  try {
+    const rawQuery = `${adres}, ${plaats}`;
+    const suggestUrl = `https://api.pdok.nl/bzk/locatieserver/search/v3_1/suggest?q=${encodeURIComponent(rawQuery)}&rows=1`;
+    const suggestRes = await fetch(suggestUrl);
+    const suggestData: any = await suggestRes.json();
+
+    if (suggestData?.response?.docs?.length > 0) {
+      const doc = suggestData.response.docs[0];
+      const lookupUrl = `https://api.pdok.nl/bzk/locatieserver/search/v3_1/lookup?id=${doc.id}`;
+      const lookupRes = await fetch(lookupUrl);
+      const lookupData: any = await lookupRes.json();
+      
+      if (lookupData?.response?.docs?.length > 0) {
+        const wijkRaw = lookupData.response.docs[0].wijknaam || 'Onbekend';
+        return wijkRaw.replace(/^Wijk \d+ /i, ''); 
+      }
+    }
+  } catch (error) {
+    console.error('PDOK Fetch Error:', error);
+  }
+  return 'Wijk onbekend';
+}
+
+function parseStructuredN8nMatches(sourceArray: any[], datum: string): any[] {
+  return sourceArray.map((item: any, index: number) => {
+    let percentage = 0;
+    const rawPct = item["match %"];
+    if (typeof rawPct === 'number') {
+      percentage = rawPct <= 1 && rawPct > 0 ? Math.round(rawPct * 100) : Math.round(rawPct);
+    } else {
+      const pctStr = String(rawPct || "0%");
+      let parsed = parseInt(pctStr.replace(/\D/g, '')) || 0;
+      if (pctStr.includes('.') && parsed < 10) parsed *= 10;
+      percentage = parsed <= 1 && parsed > 0 ? Math.round(parsed * 100) : Math.round(parsed);
+      if (percentage > 100) percentage = Math.floor(percentage / 10);
+    }
+    
+    const isRegionMatch = (item["afstand zoekgebied"] || '').toLowerCase().includes("ja") || (item["afstand zoekgebied"] || '').toLowerCase().includes("dichtbij");
+    const isBudgetMatch = (item["prijs binnen budget"] || '').toLowerCase().includes("ja");
+    const isTypeMatch = (item["woning type"] || '').length > 0;
+    const isSpecialMatch = true;
+
+    return {
+      id: `n8n-${Date.now()}-${index}`,
+      clientName: item["naam klant"] || "Onbekende Klant",
+      address: item["adres"] || "Onbekend Adres",
+      matchPercentage: percentage,
+      reason: item["analyse"] || "Geen analyse beschikbaar.",
+      link: item["link woning"] || "#",
+      makelaar: "Zie link",
+      shortSummary: `Vraagprijs: ${item["prijs"] || 'Onbekend'}`,
+      features: [],
+      matchCriteria: [
+        { label: "📍 Regio", client: item["zk geb. klant"] || "Volgens profiel", house: `${item["afstand zoekgebied"] || 'ja'}`, match: isRegionMatch },
+        { label: "💰 Budget", client: item["budget range"] || "Volgens profiel", house: `${item["prijs"] || 'n.v.t.'} · ${item["prijs binnen budget"] || ''}`, match: isBudgetMatch },
+        { label: "🏠 Woningtype", client: item["woning type klnt prof"] || "Volgens profiel", house: item["woning type"] || "n.v.t.", match: isTypeMatch },
+        { label: "✨ Bijzonderheden", client: item["bijzondere kenmerken klnt prof"] || "Volgens profiel", house: item["bijzondere kenmerken"] || "n.v.t.", match: isSpecialMatch }
+      ],
+      datum: datum
+    };
+  });
+}
+
+const parseN8nScans = async (houses: any[]) => {
+  const processed = [];
+  for (const house of houses) {
+    if (!house.adres || !house.Plaats) continue;
+    
+    // Optioneel: wijk opzoeken als deze ontbreekt
+    if (!house.Wijk || house.Wijk === 'Onbekend') {
+      house.Wijk = await getOfficialWijk(house.adres, house.Plaats);
+    }
+    
+    house.status = house.status || house.satus || 'Beschikbaar';
+    house.m2 = (house.m2 || '--').toString().replace(/&#178;/g, '²');
+    house["m2 perseel"] = (house["m2 perseel"] || '--').toString().replace(/&#178;/g, '²');
+    
+    Object.keys(house).forEach(k => {
+      if (k.toLowerCase().includes('prijs') && !house.Prijs) {
+        house.Prijs = house[k];
+      }
+    });
+
+    if (typeof house.Prijs === 'number') {
+      house.Prijs = '€ ' + house.Prijs.toLocaleString('nl-NL');
+    } else if (typeof house.Prijs === 'string' && !house.Prijs.includes('€') && !isNaN(Number(house.Prijs))) {
+      house.Prijs = '€ ' + Number(house.Prijs).toLocaleString('nl-NL');
+    } else if (typeof house.Prijs === 'string' && !house.Prijs.includes('€')) {
+      house.Prijs = '€ ' + house.Prijs;
+    }
+    
+    house.Prijs = house.Prijs || 'Prijs op aanvraag';
+    house.Makelaar = house.Makelaar || 'Onbekende Makelaar';
+    if (!house.Datum) house.Datum = new Date().toLocaleDateString('nl-NL');
+    processed.push(house);
+  }
+  return processed;
+};
+
+// --- Einde N8N Helpers ---
 
 const DUMMY_CUSTOMERS: Customer[] = [
   {
@@ -739,53 +848,45 @@ export default function App() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [scansRes, matchesRes, klantenRes] = await Promise.all([
-          fetch('http://localhost:3001/api/scans'),
-          fetch('http://localhost:3001/api/matches'),
-          fetch('http://localhost:3001/api/klanten').catch(() => null)
-        ]);
-        
-        const scansData = await scansRes.json();
-        setHouseScans(scansData);
-        
-        const matchesData = await matchesRes.json();
-        setMatches(matchesData?.matches || []);
+        // 1. Scans ophalen
+        const scansRes = await fetch(N8N_SCANS_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ trigger: 'fetch_latest', source: 'WoonWensManager' })
+        });
+        const scansRaw = await scansRes.json();
+        const scansProcessed = await parseN8nScans(Array.isArray(scansRaw) ? scansRaw : (scansRaw.data || []));
+        setHouseScans(scansProcessed);
 
+        // 2. Matches ophalen
+        const matchesRes = await fetch(N8N_MATCHES_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ trigger: 'fetch_latest', source: 'WoonWensManager' })
+        });
+        const matchesRaw = await matchesRes.json();
+        const datum = new Date().toISOString();
+        const matchesProcessed = parseStructuredN8nMatches(Array.isArray(matchesRaw) ? matchesRaw : [], datum);
+        setMatches(matchesProcessed);
+
+        // 3. Klanten ophalen
+        const klantenRes = await fetch(N8N_KLANTEN_URL).catch(() => null);
         if (klantenRes) {
-           const klantenData = await klantenRes.json();
-           setKlantenLijst(klantenData.klanten || []);
+          const klantenData = await klantenRes.json();
+          setKlantenLijst(Array.isArray(klantenData) ? klantenData : (klantenData.klanten || []));
         }
       } catch (error) {
-        console.error('Error fetching data:', error);
+        console.error('Error fetching data from n8n:', error);
       } finally {
         setLoading(false);
       }
     };
     
     fetchData();
-    // Fallback polling elke 30 seconden
-    const interval = setInterval(fetchData, 30000);
+    // Fallback polling elke 60 seconden (iets minder intensief voor n8n)
+    const interval = setInterval(fetchData, 60000);
 
-    // Real-time SSE stream voor matches (nieuwe match = directe update)
-    const evtSource = new EventSource('http://localhost:3001/api/matches/stream');
-    evtSource.onmessage = (event) => {
-      try {
-        const newMatch = JSON.parse(event.data);
-        setMatches(prev => [newMatch, ...prev]);
-        console.log('📡 Nieuwe match ontvangen via SSE:', newMatch);
-      } catch (e) {
-        console.error('SSE parse fout:', e);
-      }
-    };
-    evtSource.onerror = () => {
-      // De browser herverbindt automatisch bij een verbroken verbinding
-      console.warn('SSE verbinding verbroken, poging tot herverbinding...');
-    };
-
-    return () => {
-      clearInterval(interval);
-      evtSource.close();
-    };
+    return () => clearInterval(interval);
   }, []);
 
   const [selectedViewing, setSelectedViewing] = useState<{
@@ -800,19 +901,19 @@ export default function App() {
   const refreshMatches = async () => {
     setRefreshing(true);
     try {
-      const res = await fetch('http://localhost:3001/api/fetch-n8n-matches');
+      const res = await fetch(N8N_MATCHES_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ trigger: 'fetch_latest', source: 'WoonWensManager' })
+      });
       const data = await res.json();
-      if (data.status === 'success') {
-        const matchesRes = await fetch('http://localhost:3001/api/matches');
-        const matchesData = await matchesRes.json();
-        setMatches(matchesData.matches || []);
-        alert('Matches succesvol ververst via n8n!');
-      } else {
-        alert('Geen nieuwe matches gevonden op n8n.');
-      }
+      const datum = new Date().toISOString();
+      const processed = parseStructuredN8nMatches(Array.isArray(data) ? data : [], datum);
+      setMatches(processed);
+      alert(`Succesvol ${processed.length} matches opgehaald!`);
     } catch (error) {
       console.error('Error refreshing matches:', error);
-      alert('Fout bij verversen matches.');
+      alert('Fout bij verversen matches via n8n.');
     } finally {
       setRefreshing(false);
     }
@@ -827,15 +928,11 @@ export default function App() {
   const refreshKlanten = async () => {
     setRefreshingKlanten(true);
     try {
-      const res = await fetch('http://localhost:3001/api/fetch-klanten');
+      const res = await fetch(N8N_KLANTEN_URL);
       const data = await res.json();
-      if (data.status === 'success') {
-         setKlantenLijst(data.klanten);
-      } else {
-         alert(data.message || 'Geen data gevonden.');
-      }
+      setKlantenLijst(Array.isArray(data) ? data : (data.klanten || []));
     } catch (e) {
-      alert('Fout bij ophalen klanten.');
+      alert('Fout bij ophalen klanten profielen van n8n.');
     } finally {
       setRefreshingKlanten(false);
     }
@@ -845,26 +942,22 @@ export default function App() {
     e.preventDefault();
     setSubmittingKlant(true);
     try {
-      // For now, post simulated or to backend (if backend endpoint exists)
-      const res = await fetch('http://localhost:3001/api/add-klant', {
+      const res = await fetch(N8N_ADD_KLANT_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newKlant)
       });
       
-      const data = await res.json();
-      if (data.status === 'success') {
+      if (res.ok) {
          alert('Klant succesvol toegestuurd naar N8N!');
          setShowAddKlantModal(false);
          setNewKlant({ Naam: '', Regio: '', BijzonderhedenRegio: '', Prijsklasse: '', Woningtype: '', BijzondereKenmerken: '' });
-         // Automatically refresh the table after adding
          refreshKlanten();
       } else {
-         alert('Er is iets misgegaan: ' + data.message);
+         alert('Er is iets misgegaan bij het versturen naar N8N.');
       }
     } catch (e) {
-      alert('Klant is verzonden, maar er was geen actieve N8N Webhook geconfigureerd hiervoor.');
-      setShowAddKlantModal(false);
+      alert('Fout bij verbinding met N8N Webhook.');
     } finally {
       setSubmittingKlant(false);
     }
@@ -873,19 +966,18 @@ export default function App() {
   const refreshScans = async () => {
     setRefreshingScans(true);
     try {
-      const res = await fetch('http://localhost:3001/api/fetch-n8n-scans');
+      const res = await fetch(N8N_SCANS_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ trigger: 'fetch_latest', source: 'WoonWensManager' })
+      });
       const data = await res.json();
-      if (data.status === 'success') {
-        const scansRes = await fetch('http://localhost:3001/api/scans');
-        const scansData = await scansRes.json();
-        setHouseScans(scansData);
-        alert(`Succesvol ${data.fetched} scan(s) binnengehaald via n8n!`);
-      } else {
-        alert('Geen nieuwe scans of data-formaat onjuist.');
-      }
+      const processed = await parseN8nScans(Array.isArray(data) ? data : (data.data || []));
+      setHouseScans(processed);
+      alert(`Succesvol ${processed.length} scans opgehaald!`);
     } catch (error) {
-      console.error('Error fetching n8n scans:', error);
-      alert('Fout bij verversen scans.');
+      console.error('Error refreshing scans:', error);
+      alert('Fout bij verversen scans via n8n.');
     } finally {
       setRefreshingScans(false);
     }
