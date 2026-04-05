@@ -917,8 +917,8 @@ export default function App() {
       <aside className="w-20 flex flex-col items-center py-8 bg-[#141e2b] gap-8 border-r border-slate-800">
         <SidebarIcon view="nieuwste" icon={Home} label="Nieuwste huizen" />
         <SidebarIcon view="matches" icon={MatchIcon} label="Matches" />
-        <SidebarIcon view="klanten" icon={UserPlus} label="Klanten Profielen" />
         <SidebarIcon view="manager" icon={ClipboardList} label="Manager" />
+        <SidebarIcon view="klanten" icon={UserPlus} label="Klanten Profielen" />
       </aside>
 
       {/* Main Content */}
