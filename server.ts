@@ -216,6 +216,68 @@ function parseN8nMatches(tekst: string, datum: string): any[] {
   return matches;
 }
 
+// 4b. Helper: parseer de NIEUWE gestructureerde JSON array van N8N naar ons Match formaat (met twee kolommen)
+function parseStructuredN8nMatches(sourceArray: any[], datum: string): any[] {
+  return sourceArray.map((item: any) => {
+    let percentage = 0;
+    const rawPct = item["match %"];
+    if (typeof rawPct === 'number') {
+      percentage = rawPct <= 1 && rawPct > 0 ? Math.round(rawPct * 100) : Math.round(rawPct);
+    } else {
+      const pctStr = String(rawPct || "0%");
+      let parsed = parseInt(pctStr.replace(/\D/g, '')) || 0;
+      // if string was "0.8", parsed becomes 8, so we fix that:
+      if (pctStr.includes('.') && parsed < 10) parsed *= 10;
+      percentage = parsed <= 1 && parsed > 0 ? Math.round(parsed * 100) : Math.round(parsed);
+      if (percentage > 100) percentage = Math.floor(percentage / 10); // fallback for weird anomalies
+    }
+    
+    // Bepaal de match-statussen (true/false) gebaseerd op de tekst in de JSON
+    const isRegionMatch = (item["afstand zoekgebied"] || '').toLowerCase().includes("ja") || (item["afstand zoekgebied"] || '').toLowerCase().includes("dichtbij");
+    const isBudgetMatch = (item["prijs binnen budget"] || '').toLowerCase().includes("ja");
+    const isWoningtypeMatch = !(item["woning type"] || '').toLowerCase().includes("nadeel") && !(item["woning type"] || '').toLowerCase().includes("mismatch");
+
+    return {
+      id: `n8n-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      clientName: item["naam klant"] || 'Onbekend',
+      address: item["adres"] || 'Onbekend adres',
+      matchPercentage: percentage,
+      reason: item["analyse"] || '',
+      link: item["link woning"] || '',
+      makelaar: 'Zie link',
+      shortSummary: item["prijs"] ? `Vraagprijs: ${item["prijs"]}` : 'Zie analyse',
+      features: [],
+      matchCriteria: [
+        {
+          label: "📍 Regio",
+          client: item["zk geb. klant"] || '-',
+          house: `${item["adres"] ? item["adres"].split(',').pop()?.trim() || item["adres"] : '-'} (${item["afstand zoekgebied"] || '-'})`,
+          match: isRegionMatch
+        },
+        {
+          label: "💰 Budget",
+          client: item["budget range"] || '-',
+          house: `${item["prijs"] || '-'} · ${item["prijs binnen budget"] || '-'}`,
+          match: isBudgetMatch
+        },
+        {
+          label: "🏠 Woningtype",
+          client: item["woning type klnt prof"] || '-',
+          house: item["woning type"] || '-',
+          match: isWoningtypeMatch
+        },
+        {
+          label: "✨ Bijzonderheden",
+          client: item["bijzondere kenmerken klnt prof"] || '-',
+          house: item["bijzondere kenmerken"] || '-',
+          match: true
+        }
+      ],
+      datum
+    };
+  });
+}
+
 // 5. POST Webhooks
 app.post('/webhook', async (req, res) => {
   try {
@@ -295,14 +357,17 @@ app.post('/webhook-n8n-match', async (req, res) => {
     console.log('--- n8n Match Webhook ontvangen ---');
     console.log('Body keys:', Object.keys(body));
 
-    const matchTekst: string = body.matches || body.output || body.text || '';
-    const datum: string = body.datum || new Date().toISOString();
-
-    if (!matchTekst) {
-      return res.status(400).json({ status: 'error', message: 'Geen matches tekst gevonden in body' });
+    let parsedMatches: any[] = [];
+    const datum: string = new Date().toISOString();
+    if (Array.isArray(body) && body.length > 0 && typeof body[0] === 'object' && body[0]["naam klant"]) {
+       parsedMatches = parseStructuredN8nMatches(body, datum);
+    } else {
+       const matchTekst: string = body.matches || body.output || body.text || '';
+       if (!matchTekst) {
+         return res.status(400).json({ status: 'error', message: 'Geen matches tekst of JSON array gevonden in body' });
+       }
+       parsedMatches = parseN8nMatches(matchTekst, datum);
     }
-
-    const parsedMatches = parseN8nMatches(matchTekst, datum);
     console.log(`✅ ${parsedMatches.length} matches geparsed uit n8n response`);
 
     const data = JSON.parse(fs.readFileSync(MATCH_DATA_FILE, 'utf-8'));
@@ -406,70 +471,8 @@ app.get('/api/fetch-n8n-matches', async (req, res) => {
     const datum = new Date().toISOString();
     let parsedMatches: any[] = [];
 
-    if (Array.isArray(n8nBody) && n8nBody.length > 0 && (n8nBody[0]["naam klant"] || n8nBody[0]["adres"])) {
-        parsedMatches = n8nBody.map(match => {
-            let criteria: any[] = [];
-            if (match.analyse) {
-                // Normalize so that bullets "1)" or "-" are structurally on new lines
-                let normalizedAnalyse = match.analyse.replace(/(?:(?:\d+\)|\-)\s+[^:]+:)/g, '\n$&');
-                const lines = normalizedAnalyse.split('\n');
-                
-                for (const line of lines) {
-                    const m = line.trim().match(/^(?:\d+\)|\-)\s+([^:]+):\s*([^—\-]+)[—\-]\s*(.+)$/);
-                    if (m) {
-                        let [, labelRaw, statusString, houseInfo] = m;
-                        labelRaw = labelRaw.trim();
-                        houseInfo = houseInfo.trim();
-                        statusString = statusString.trim().toLowerCase();
-                        
-                        const isMatch = !statusString.includes('niet voldaan') && !statusString.includes('mismatch') && !statusString.includes('ongunstig') && !statusString.includes('deels negatief');
-                        
-                        let label = labelRaw;
-                        let client = "Volgens profiel";
-                        
-                        if (labelRaw.includes('≥')) {
-                            const parts = labelRaw.split('≥');
-                            label = parts[0].trim();
-                            client = 'Minimaal ' + parts[1].trim();
-                        } else if (labelRaw.toLowerCase().includes('budget') || labelRaw.toLowerCase().includes('prijs')) {
-                            label = '💰 Budget';
-                        } else if (labelRaw.toLowerCase().includes('regio') || labelRaw.toLowerCase().includes('locatie')) {
-                            label = '📍 Regio';
-                        } else if (labelRaw.toLowerCase().includes('type') || labelRaw.toLowerCase().includes('woning')) {
-                            label = '🏠 Woningtype';
-                        } else if (labelRaw.toLowerCase().includes('slaapkamer') || labelRaw.toLowerCase().includes('badkamer')) {
-                            label = labelRaw.toLowerCase().includes('slaapkamer') ? '🛏 Slaapkamers' : '🛁 Badkamers';
-                        } else if (labelRaw.toLowerCase().includes('oppervlak') || labelRaw.toLowerCase().includes('m²') || labelRaw.toLowerCase().includes('m2')) {
-                            label = '📏 Woonoppervlak';
-                            if (labelRaw.includes('100')) client = '~100 m²+';
-                        }
-                        
-                        criteria.push({ label, client, house: houseInfo.substring(0, 70) + (houseInfo.length>70?"...":""), match: isMatch });
-                    }
-                }
-            }
-            
-            let percentage = match["match %"] || 0;
-            if (percentage <= 1 && percentage > 0) percentage = percentage * 100;
-            
-            return {
-                id: `n8n-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-                clientName: match["naam klant"] || 'Onbekend',
-                address: match["adres"] || 'Onbekend',
-                matchPercentage: Math.round(percentage),
-                reason: match.analyse || '',
-                link: match["link woning"] || '',
-                makelaar: match["Makelaar"] || 'Zie link',
-                shortSummary: match.prijsklasse || 'Zie analyse',
-                features: [
-                    match.regio,
-                    match["woning type"],
-                    match["bijzondere kenmerken"]
-                ].filter(Boolean),
-                matchCriteria: criteria,
-                datum: datum
-            };
-        });
+    if (Array.isArray(n8nBody) && n8nBody.length > 0 && (n8nBody[0]["naam klant"] || n8nBody[0]["adres"] || n8nBody[0]["bijzondere kenmerken"])) {
+        parsedMatches = parseStructuredN8nMatches(n8nBody, datum);
     } else {
         const matchTekst: string = n8nBody.matches || n8nBody.output || n8nBody.text || '';
         if (!matchTekst) {

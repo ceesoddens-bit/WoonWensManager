@@ -1,172 +1,232 @@
 {
   "matches": [
     {
-      "id": "n8n-1775340255508-wuz8t",
+      "id": "n8n-1775382137234-ktu5g",
       "clientName": "Bart Snel",
       "address": "Kerkvonderen 46, 6122 CK Buchten",
-      "matchPercentage": 38,
-      "reason": "Gecalculeerde criteria (op basis van het zoekprofiel van Bart Snel):\n- Regio: match. Buchten ligt in de Born / Sittard-Geleen regio en valt onder 'omstreken' van Geleen/Spaubeek — positief.\n- Prijs: geen match volgens uw regel: de vraagprijs €179.000 ligt >30% onder het budget van €300.000 (ca. 40% onder), en wordt daarom als buiten het gewenste prijsklasse beschouwd.\n- Woningtype: geen match. Het aangeboden object is een geschakelde eengezinswoning; Bart zoekt halfvrijstaand/tweekapper.\n- Slaapkamers: geen directe match. De woning heeft 2 slaapkamers; Bart vraagt minimaal 3. Wel is er een ruime, hoge bergzolder (35 m²) bereikbaar via vlizotrap met potentie om (gedeeltelijk) om te bouwen tot extra slaapkamer(s) na aanpassing (vaste trap, isolatie/afwerking, evt. vergunningen).\nSamenvattend: van de vier hoofdcriteria voldoet de woning enkel aan de regiovereiste; de slaapkamer- en woningtype-eisen zijn niet direct vervuld (maar zolder biedt conversiemogelijkheid) en de prijs valt door uw speciale regel buiten het budget. Op basis van deze weging kom ik uit op circa 38% match.\nAanbeveling: voer afstemming met Bart uit om te bepalen of hij:\n1) bereid is af te wijken van woningtype (geschakelde woning acceptabel),\n2) openstaat voor het (op termijn) creëren van een extra slaapkamer via zolderombouw,\n3) de specifieke regel over 'teveel onder budget is onwenselijk' hanteert — als die regel vervalt, zou de woning in prijs wél binnen het budget vallen en de match significant stijgen.\nAls Bart openstaat voor zolderconversie en afwijking op woningtype, is bezichtiging aan te raden vanwege de goede staat, energieklasse B en recente cv (2020).",
+      "matchPercentage": 63,
+      "reason": "Samenvatting van de match voor Bart Snel: op basis van het klantenprofiel heb ik vier kerncriteria gehanteerd: regio, prijsklasse, woningtype en minimaal aantal slaapkamers. De vraagprijs van €179.000 valt ruim onder de maximale prijsklasse van €300.000 (positief), maar volgens de door u gegeven rekenregel ligt de minimumgrens op €210.000 (30% onder maximum), waardoor de woning formeel buiten de gestelde ondergrens valt. De woning is een geschakelde eengezinswoning: dat komt grotendeels overeen met Bart’s voorkeur voor een halfvrijstaand/tweekapper. Locatie (Buchten) ligt in de regio Sittard-Geleen/Born en is dus ‘dichtbij’ Bart’s opgegeven zoekgebied (Geleen/Beek e.o.), niet exact binnen de opgegeven plaatsen maar acceptabel nabij. Het belangrijkste knelpunt is het aantal slaapkamers: Bart wil minimaal 3 slaapkamers; het huis heeft twee slaapkamers. Een belangrijke nuance is de grote hoge bergzolder (35 m²) die, na aanpassingen (vaste trap, afwerking, vergunning/brandveiligheid), uitbreidingspotentieel biedt tot extra slaapkamer of woonruimte, waardoor de woning praktisch alsnog aan de eis kan voldoen. Verder zijn energieklasse B en een recente cv-ketel sterke pluspunten; ontbreken van tuin/garage en eenvoudige keuken/badkamer zijn aandachtspunten. Conclusie: goede kans op interesse als Bart bereid is om zolderaanpassing te overwegen of zijn strikte gebiedsgrenzen iets te verruimen.",
       "link": "https://makelaardij.fidus.nu/woningaanbod/kerkvonderen-46-in-buchten/",
       "makelaar": "Zie link",
-      "shortSummary": "Buiten budget (vraagprijs €179.000 is >30% onder het budget van €300.000)",
-      "features": [
-        "Match (Buchten ligt in gemeente Born / Sittard-Geleen; valt binnen 'omstreken' van Geleen/Spaubeek)",
-        "Geschakelde eengezinswoning (geen halfvrijstaand/tweekapper) — geen match",
-        "2 slaapkamers (vereist minimaal 3) — GEEN directe match; grote bergzolder 35 m² met potentie voor extra slaapkamer(s); energieklasse B; Vaillant cv-ketel 2020; geen tuin/garage; openbaar parkeren"
-      ],
+      "shortSummary": "Vraagprijs: € 179.000 k.k.",
+      "features": [],
       "matchCriteria": [
         {
           "label": "📍 Regio",
-          "client": "Volgens profiel",
-          "house": "Geleen regio en valt onder 'omstreken' van Geleen/Spaubeek — positief.",
+          "client": "Spaubeek, Neerbeek, Beek, Sweikhuizen, Geleen, Puth en omstreken",
+          "house": "6122 CK Buchten (dichtbij zoekgebied)",
+          "match": true
+        },
+        {
+          "label": "💰 Budget",
+          "client": "min € 210.000 - max € 300.000",
+          "house": "€ 179.000 k.k. · nee (onder minimum budget van € 210.000)",
+          "match": false
+        },
+        {
+          "label": "🏠 Woningtype",
+          "client": "Halfvrijstaand, tweekapper",
+          "house": "geschakelde eengezinswoning (bestaande bouw)",
+          "match": true
+        },
+        {
+          "label": "✨ Bijzonderheden",
+          "client": "Minimaal 3 slaapkamers",
+          "house": "2 slaapkamers; ruime hoge bergzolder 35 m² (bereikbaar via vlizotrap); energieklasse B; Vaillant cv-ketel 2020; geen tuin/garage; deels elektrische rolluiken",
           "match": true
         }
       ],
-      "datum": "2026-04-04T22:04:15.508Z"
+      "datum": "2026-04-05T09:42:17.234Z"
     },
     {
-      "id": "n8n-1775340255508-rykm9",
+      "id": "n8n-1775382137234-56661",
       "clientName": "Renaldo1",
       "address": "Laathofstraat 34, 6191 GE Beek (Neerbeek)",
       "matchPercentage": 75,
-      "reason": "Beoordeling op basis van de criteria in het zoekprofiel van Renaldo1 (regio, prijsklasse, woningtype, bijzondere kenmerken). Gegevensverificatie: woning ligt in Beek (Neerbeek) — duidelijke regiomatch. Woningstype (2-onder-1-kap) valt onder 'alle woningtypes' — match. Bijzondere kenmerken: woning biedt expliciet veel hobby-/werkruimte (kelder, garage met smeerput, carport, zolderruimte) — dit voldoet goed aan een koper die ruimte zoekt, en omdat Renaldo1 geen specifieke bijzondere eisen heeft, tellen deze als een plus. Prijs: volgens uw instructie is een vraagprijs die 30% of meer onder het budget ligt buiten het budget; met een vraagprijs van €350.000 ligt deze woning ruim onder die grens (30% van €950.000 = €285.000; grens is €665.000), daarom telt de prijsklasse als niet-matching. Matchberekening: 4 hoofdcriteria beoordeeld (regio, prijsklasse, woningtype, bijzondere kenmerken). 3 van de 4 criteria voldoen → matchpercentage 75%. Conclusie en advies: dit is een sterke match op locatie en gebruikswaarde (hobby/werkruimte, veel kamers en kelder), en het lage prijsniveau maakt het financieel aantrekkelijk — hoewel het formeel 'buiten het budget' valt volgens de gegeven regel. Aanbevolen vervolgstappen: - Indien prijs buiten budget geen dealbreaker is, plan bezichtiging: eigenschappen (kelder, garage met smeerput, carport) sluiten goed aan op praktische wensen. - Indien de budgetregel strikt is, bespreek met Renaldo1 of deze regel heroverwogen kan worden (lage prijs kan juist gunstig zijn). - Let op: verkoop met niet-zelfbewonings- en as-is-where-is clausule; groepenkast moet vernieuwd worden; CV-ketel is in huur — deze aandachtspunten bespreekbaar bij bezichtiging of voorbehoud in bod.",
+      "reason": "Deze woning sluit goed aan op het zoekprofiel van Renaldo1 qua regio en woningtype: Laathofstraat 34 ligt in Neerbeek binnen de gemeente Beek (zoekgebied Beek/Spaubeek) en is een ruime 2-onder-1-kapwoning, precies binnen de door de klant geaccepteerde woningtypes. Belangrijke pluspunten zijn de vrijwel volledige kelder (bruikbaar als hobbyruimte), de garage met smeerput en carport — hierdoor is de woning bijzonder geschikt voor iemand met technische hobby’s of behoefte aan veel bergruimte. Ook de royale perceelgrootte en rustige ligging zijn sterke verkoopargumenten.\n\nHet belangrijkste aandachtspunt is het budgetcriterium: het profiel hanteert een minimale zoekgrens van €665.000 (budget minus 30%) tot €950.000; de vraagprijs van €350.000 ligt ver onder deze grens. Daardoor scoort de match lager ondanks de uitstekende inhoudelijke aansluiting op wensen en gebruiksmogelijkheden. Andere punten om rekening mee te houden zijn de as-is-where-is en niet-zelfbewoningsclausule, de huur van de CV-ketel en de noodzaak tot vernieuwing van de groepenkast en enkele isolatieverbeteringen. Conclusie: sterk regionaal en functioneel passend object voor Renaldo1’s wensen (hobby/werkruimte), maar prijs valt aanzienlijk buiten de door de klant gedefinieerde prijsklasse, wat de uiteindelijke geschiktheid beperkt.",
       "link": "https://www.heykens.nl/aanbod/woningaanbod/beek/koop/huis-10003550-Laathofstraat-34/",
       "makelaar": "Zie link",
-      "shortSummary": "Buiten budget volgens uw regel: vraagprijs €350.000 is meer dan 30% onder het opgegeven budget van €950.000",
-      "features": [
-        "Match: Beek (Neerbeek) valt binnen gewenste regio Beek, Spaubeek",
-        "2-onder-1-kapwoning (tweekapper) — past binnen voorkeur 'alle woningtypes'",
-        "Volledige kelder (~1,97 m), garage met smeerput, carport, 5e slaapkamer op zolder (dakkapel), royale perceelgrootte (279 m²) — veel ruimte voor hobby/werk"
-      ],
+      "shortSummary": "Vraagprijs: €350.000,- k.k.",
+      "features": [],
       "matchCriteria": [
         {
+          "label": "📍 Regio",
+          "client": "Beek, Spaubeek",
+          "house": "6191 GE Beek (Neerbeek) (ja)",
+          "match": true
+        },
+        {
           "label": "💰 Budget",
-          "client": "Volgens profiel",
-          "house": "zelfbewonings- en as-is-where-is clausule; groepenkast moet vernieuwd ...",
+          "client": "€665.000 - €950.000",
+          "house": "€350.000,- k.k. · nee, woningprijs ligt circa 63% onder het maximale budget en onder de minimale zoekgrens (onder €665.000)",
+          "match": false
+        },
+        {
+          "label": "🏠 Woningtype",
+          "client": "Alle woningtypes",
+          "house": "2-onder-1-kapwoning (tweekapper)",
+          "match": true
+        },
+        {
+          "label": "✨ Bijzonderheden",
+          "client": "n.v.t.",
+          "house": "volledige kelder (bijna 2 m hoog), garage met smeerput, carport met overkapping, dakkapel op zolder, royale tuin (noordwest), souterrain geschikt als hobbyruimte, CV-ketel in huur (Volta NXT), as-is/where-is en niet-zelfbewoningsclausule, groepenkast dient vernieuwing",
           "match": true
         }
       ],
-      "datum": "2026-04-04T22:04:15.508Z"
+      "datum": "2026-04-05T09:42:17.234Z"
     },
     {
-      "id": "n8n-1775340255509-t1jpa",
+      "id": "n8n-1775382137234-h7adz",
       "clientName": "Saskia Essers",
       "address": "Helmbloem 7, 6181 MX Elsloo",
       "matchPercentage": 67,
-      "reason": "Vergelijking criteria (Saskia Essers):\n- Regio: MATCH. Elsloo (Stein) ligt in Zuid/Midden-Limburg zoals gewenst.\n- Prijsklasse: MATCH. Vraagprijs €389.000 ligt binnen het maximum van €390.000. (Opmerking: de regel over 30% onder budget geldt alleen als de prijs substantieel lager is; dat is hier niet het geval.)\n- Woningtype: MISMATCH. Saskia zoekt een levensloopbestendige woning of bungalow (vaak gelijkvloers/accessibel). Deze woning is een tussenwoning met twee woonlagen (drie slaapkamers boven); geen indicatie dat de woning levensloopbestendig is.\nResultaat en percentageberekening: ik heb de drie expliciet genoemde zoekcriteria (regio, prijsklasse, woningtype) meegenomen. 2 van de 3 criteria worden voldaan → 2/3 = 66,7% → afgerond 67%.\nPraktische overwegingen en advies:\n- Pluspunten voor Saskia: instapklare staat, A+ label met 12 zonnepanelen (lage energiekosten), inpandige garage (hulp bij hobby/berging), overkapping en onderhoudsarme tuin. Deze punten maken de woning aantrekkelijk qua comfort en levensloopcomfort-achtige voorzieningen (airco, goede isolatie).\n- Minpunten: geen gelijkvloerse slaap- en badkamerindeling die typisch is voor levensloopbestendigheid. Als gelijkvloers wonen een harde eis is, is dit geen geschikte match.\nAanbeveling: als Saskia enigszins flexibel is ten aanzien van gelijkvloers wonen (bijv. acceptatie van begane grond met extra slaapkamer mogelijk te realiseren of gebruik van garage/ruimte als slaapkamer), dan is bezichtiging de moeite waard. Zo niet, dan adviseer ik verder te zoeken naar echte bungalows/levensloopbestendige woningen binnen Midden/Zuid-Limburg.",
-      "link": "https://odcvastgoed.nl/woningaanbod/koop/elsloo/helmbloem/7?moveunavailablelistingstothebottom=true&orderby=10&orderdescending=true&take=14",
+      "reason": "Samenvatting en analyse (berekening match): Saskia zoekt binnen Midden- en Zuid-Limburg, met een maximale prijsklasse tot €390.000 en voorkeur voor een levensloopbestendige woning of bungalow. Helmbloem 7 (Elsloo) voldoet aan 2 van de 3 hoofdcriteria: ligging (Elsloo valt binnen Zuid‑/Midden‑Limburg) en prijs (vraagprijs €389.000 is binnen het maximale budget van €390.000). De woningtype‑eis (levensloopbestendig / bungalow) wordt niet direct gehaald: het betreft een tussenwoning uit 2005 met twee bouwlagen en geen aangewezen slaap‑/badkamer op de begane grond, waardoor het niet als levensloopbestendig kan worden aangemerkt zonder aanpassingen. Daarom is de score 2/3 criteria = ~66,7% → afgerond 67%. Sterke punten die de match verbeteren: instapklare staat, A+ label met 12 zonnepanelen (lage energiekosten), inpandige garage (mogelijk om te bouwen tot hobby-/slaapruimte), overkapping en onderhoudsvriendelijke tuin. Aandachtspunten: geen begane‑grond slaapkamer, CV is een huurinstallatie (€36,95/mnd), en het is een tussenwoning (geen bungalow). Aanbeveling: plan een bezichtiging om te beoordelen of aanpassingen (bijv. slaapruimte op de begane grond, traplift of garageconversie) praktisch en financieel haalbaar. Als Saskia strikt een bungalow/levensloopbestendige indeling vereist, blijft dit huis minder geschikt; als ze openstaat voor aanpassingen is het een kansrijke optie.",
+      "link": "https://odcvastgoed.nl/woningaanbod/koop/elsloo/helmbloem/7?moveunavailablelistingstothebottom=true&amp;orderby=10&amp;orderdescending=true&amp;take=14",
       "makelaar": "Zie link",
-      "shortSummary": "Vraagprijs €389.000 — binnen budget (max. €390.000). Niet >30% onder budget, dus geldig",
-      "features": [
-        "Elsloo (gemeente Stein) — valt binnen Midden/Zuid-Limburg (match)",
-        "Tussenwoning (eengezinswoning, 2 bouwlagen) — geen levensloopbestendige woning of bungalow (mismatch)",
-        "Energielabel A+, 12 zonnepanelen, inpandige garage met sectionaalpoort, overdekt terras (25 m²), airco in hoofdslaapkamer, tuinhuis, onderhoudsarme tuin"
-      ],
+      "shortSummary": "Vraagprijs: € 389.000,- k.k.",
+      "features": [],
       "matchCriteria": [
         {
           "label": "📍 Regio",
-          "client": "Volgens profiel",
-          "house": "Limburg zoals gewenst.",
-          "match": true
-        },
-        {
-          "label": "Pluspunten voor Saskia",
-          "client": "Volgens profiel",
-          "house": "achtige voorzieningen (airco, goede isolatie).",
-          "match": true
-        }
-      ],
-      "datum": "2026-04-04T22:04:15.508Z"
-    },
-    {
-      "id": "n8n-1775340255509-rirqs",
-      "clientName": "Joost en Joe",
-      "address": "Hoffmansstraat 7, 6216 ET Maastricht",
-      "matchPercentage": 50,
-      "reason": "Beoordeling per zoekcriterium (Joost en Joe):\n- Regio: match. Woning in Maastricht (Annadal) — weliswaar niet in de expliciet genoemde voorkeurswijken, maar binnen de gewenste stad/regionale zoekopzet.\n- Prijs: geen match volgens uw regel; vraagprijs €535.000 is meer dan 30% onder het klantbudget van €850.000, en wordt daarmee als 'buiten budget' gerekend.\n- Woningtype: match. Het is een geschakelde woning / semi-bungalow, wat overeenkomt met de gewenste types (geschakelde woning / halfvrijstaand / vrijstaand).\n- Bijzondere kenmerken (bouwjaar): geen match. Bouwjaar 1997 maakt de woning >20 jaar oud; klant eist maximaal 20 jaar.\nTotaal criteria beoordeeld: 4. Aantal matches: 2. Matchpercentage = 2/4 = 50%.\nAandachtspunten en aanbeveling: hoewel het percentage beperkt is door de strikte regels voor bouwjaar en de door u opgelegde '30%-onder-budget' regel, is de woning inhoudelijk aantrekkelijk: levensloopbestendig (slaap- en badkamer op begane grond), uitstekend onderhouden, moderne badkamer en keukenonderdelen, recent dak- en airco-updates, garage geschikt als hobbyruimte en energielabel B. Als Joost en Joe flexibeler zijn ten aanzien van bouwjaar of de speciale prijsregel (of juist geïnteresseerd in een lagere prijs), is dit een sterke kandidaat om te bezichtigen. Advies: bespreken of de bouwjaar-eis en/of de 30%-onder-budget regel strikt moeten blijven; bij interesse snel bezichtigen (aanvaarding in overleg).",
-      "link": "https://www.hypodomus-maastricht.nl/aanbod/woningaanbod/maastricht/koop/huis-10081486-Hoffmansstraat-7/",
-      "makelaar": "Zie link",
-      "shortSummary": "Buiten klantbudget volgens gevraagde regel: vraagprijs €535.000 — dit is meer dan 30% onder het klantbudget van €850.000, en wordt daardoor als buiten budget beschouwd.",
-      "features": [
-        "Woning ligt in de zoek-regio (Maastricht). Wijk Annadal is echter niet één van de expliciet genoemde voorkeurswijken (Statenkwartier, Hoge Barakken, Lindenkruis).",
-        "Geschakelde 2-onder-1-kap / semi-bungalow — past binnen de gezochte woningtypes (geschakelde woning / halfvrijstaand).",
-        "Bouwjaar 1997 — voldoet NIET aan eis 'bouwjaar maximaal 20 jaar oud'. Positieve kenmerken: levensloopbestendig (slaap- en badkamer op begane grond), inpandige garage (geschikt als hobbyruimte), airco 2024, 6 zonnepanelen (2022), energielabel B, goed onderhoud."
-      ],
-      "matchCriteria": [
-        {
-          "label": "📍 Regio",
-          "client": "Volgens profiel",
-          "house": "weliswaar niet in de expliciet genoemde voorkeurswijken, maar binnen d...",
-          "match": true
-        },
-        {
-          "label": "🏠 Woningtype",
-          "client": "Volgens profiel",
-          "house": "bungalow, wat overeenkomt met de gewenste types (geschakelde woning / ...",
+          "client": "Midden Limburg en Zuid Limburg",
+          "house": "6181 MX Elsloo (ja)",
           "match": true
         },
         {
           "label": "💰 Budget",
-          "client": "Volgens profiel",
-          "house": "eis en/of de 30%-onder-budget regel strikt moeten blijven; bij interes...",
-          "match": true
-        }
-      ],
-      "datum": "2026-04-04T22:04:15.508Z"
-    },
-    {
-      "id": "n8n-1775340255509-y20h3",
-      "clientName": "Irvina en Michel",
-      "address": "Hoffmansstraat 7, 6216 ET Maastricht",
-      "matchPercentage": 80,
-      "reason": "Korte score-toelichting:\n- Regio: overeenkomst. Woning ligt in Maastricht en is daarmee binnen de gevraagde regio (Annadal ligt in de stad). Puntenverlies omdat Annadal niet expliciet in hun buurtlijst stond, maar de algemene regio 'Maastricht' is gewenst. (match)\n- Prijs: overeenkomst. Vraagprijs €535.000 is binnen hun maximum van €600.000 en niet >30% onder het budget, dus geaccepteerd. (match)\n- Woningtype: duidelijke overeenkomst: geschakelde 2-onder-1-kap / semi-bungalow valt precies binnen hun gewenste types. (match)\n- Bijzondere kenmerken (instapklaar): de omschrijving noemt expliciet 'goed onderhouden en instapklaar' en recente vernieuwingen (dak 2024, airco 2024, badkamer 2019, zonnepanelen 2022). (match)\n- Extra ruimte voor hobbyruimte: aanwezig als mogelijkheid (inpandige garage met verwarming en elektra; extra inpandige ruimte van 20 m²). Dit vereist wel een (kleine) verbouwing/omwerking van de garage/ruimte — dus een gedeeltelijke match.\nSamenvattend: 4 criteria volledig voldaan (regio, prijs, woningtype, instapklaar) en 1 criterium gedeeltelijk (hobbyruimte vereist aanpassing). Daarom geef ik een voorzichtige en reële matchscore van 80%. Aanbeveling: plan een bezichtiging om buurtgevoel in Annadal te toetsen en om tijdens bezichtiging navraag te doen over het huurcontract van de cv-ketel, exacte opbrengst van de zonnepanelen en mogelijkheden/vergunningen voor het ombouwen van de garage tot hobbyruimte.",
-      "link": "https://www.hypodomus-maastricht.nl/aanbod/woningaanbod/maastricht/koop/huis-10081486-Hoffmansstraat-7/",
-      "makelaar": "Zie link",
-      "shortSummary": "Binnen budget (vraagprijs €535.000 < maximaal €600.000)",
-      "features": [
-        "Maastricht (Annadal) — algemeen binnen zoekregio, wijk Annadal niet expliciet genoemd in hun voorkeurlijst",
-        "Geschakelde 2-onder-1-kap / semi-bungalow (levensloopbestendig) — valt onder gewenste typen (tweekapper / 2-onder-1-kap)",
-        "Instapklaar; slaapkamer en badkamer op begane grond (levensloopbestendig); inpandige garage (ca.16 m²) en extra inpandige ruimte (20 m²) geschikt voor hobbyruimte; ruime zuidwest-tuin; energielabel B en 6 zonnepanelen"
-      ],
-      "matchCriteria": [
-        {
-          "label": "🏠 Woningtype",
-          "client": "Volgens profiel",
-          "house": "onder-1-kap / semi-bungalow valt precies binnen hun gewenste types. (m...",
+          "client": "€ 273.000,- - € 390.000,-",
+          "house": "€ 389.000,- k.k. · ja",
           "match": true
         },
         {
-          "label": "Extra ruimte voor hobbyruimte",
-          "client": "Volgens profiel",
-          "house": "dus een gedeeltelijke match.",
+          "label": "🏠 Woningtype",
+          "client": "Levensloopbestendige woning, bungalow",
+          "house": "Woonhuis, eengezinswoning, tussenwoning (bestaande bouw)",
+          "match": true
+        },
+        {
+          "label": "✨ Bijzonderheden",
+          "client": "n.v.t.",
+          "house": "Energielabel A+, 12 zonnepanelen, inpandige garage met elektrische sectionaalpoort, overkapping (25 m²), airconditioning in hoofdslaapkamer, rolluiken, complete inbouwkeuken, tuinhuis, oprit voor meerdere auto’s",
           "match": true
         }
       ],
-      "datum": "2026-04-04T22:04:15.508Z"
+      "datum": "2026-04-05T09:42:17.234Z"
     },
     {
-      "id": "n8n-1775340255509-ug4kf",
-      "clientName": "Marly en Mitchell Takacs",
-      "address": "Florasingel 33, Roermond",
-      "matchPercentage": 75,
-      "reason": "Samenvatting van de vergelijking met het zoekprofiel:\n- Regio: MATCH\n  De woning ligt in Roermond en valt praktisch binnen het zoekgebied van Marly & Mitchell (Roer‑zuid e.d.).\n- Prijs: MATCH\n  Vraagprijs €365.000 is ruim binnen het maximale budget van €470.000. (Opmerking: de regel over 30% onder het budget is niet van toepassing; 365k is ~22% onder het maximum.)\n- Woningtype: DEELS MATCH\n  Gezochte typen zijn vrijstaand of halfvrijstaand. Florasingel 33 is een hoekwoning (eengezinswoning). Een hoekwoning is niet losstaand, maar aan één zijde aangesloten; dit is daarom deels gelijk aan een halfvrijstaand aanbod — geen perfecte match, wel acceptabel afhankelijk van flexibiliteit.\n- Bijzondere kenmerken (oprit en garage): DEELS MATCH\n  De woning heeft een carport en een tweede privéparkeerplaats achter een poort (dus parkeerruimte/oprit aanwezig), maar geen expliciete garage. Er zijn wel meerdere bergruimtes (intern 21 m², extern 11 m²) die als hobbyruimte gebruikt kunnen worden.\nBeoordeling en berekening matchpercentage:\n- Criteria meegewogen: regio, prijsklasse, woningtype, bijzondere kenmerken (oprit + garage).\n- Score: regio (1), prijs (1), woningtype (0.5), bijzondere kenmerken (0.5) => totaal 3.0 / 4 = 75%.\nAdvies / vervolgstappen:\n- Plan een bezichtiging als Marly & Mitchell openstaan voor een hoekwoning/hoekwoning-variant; de locatie (autovrij hofje met grote speeltuin) en perceel (310 m²) zijn sterk gezinsvriendelijke pluspunten.\n- Tijdens bezichtiging: controleer mogelijkheden om een garage te realiseren of de berging/carport structureel als garage/hobbyruimte in te richten; beoordeel maatvoering berging en de toegang voor voertuigen of opslag van caravan.\n- Let op: badkamer is gedateerd (mogelijk te moderniseren) maar de woning is in goede staat; cv-ketel 2018 en energielabel C zijn positieve punten.\nConclusie: goede mogelijkheid voor het profiel van Marly & Mitchell — sterke punten zijn locatie, perceel en parkeermogelijkheden; aandachtspunt is het ontbreken van een officiële garage en het feit dat het geen vrijstaand huis is. Daarom een match van 75%.",
-      "link": "https://www.maatmakelaars.nl/koop/roermond/florasingel-33/",
+      "id": "n8n-1775382137235-ngxku",
+      "clientName": "Joost en Joe",
+      "address": "Hoffmansstraat 7, 6216 ET Maastricht",
+      "matchPercentage": 80,
+      "reason": "Samenvatting van de match: deze woning in Annadal (Hoffmansstraat 7) scoort goed op de kernwensen van Joost en Joe: locatie in Maastricht, gewenst woningtype (geschakelde/tweekapper) en ruime praktische indeling met slaapkamer en badkamer op de begane grond (levensloopbestendig). Financieel ligt de vraagprijs (€535.000) ruim onder het maximum van €850.000, maar ook onder de berekende minimumgrens (€595.000 = max -30%), waardoor de woning formeel buiten de door ons gehanteerde ‘minimumbudget’-range valt. Bouwjaar is 1997, dus strikt genomen niet binnen de eis “maximaal 20 jaar oud”. We hebben dit als gedeeltelijke match gewaardeerd omdat de woning recent substantiële updates heeft (nieuw plat dak 2024, airco 2024, badkamer 2019, zonnepanelen 2022) waardoor veel van de zorg rond ouder bouwjaar is weggenomen. Pluspunten: inpandige garage met ruimte voor hobby/werk, goed onderhouden, volledige isolatie en energieklasse B. Minpunten volgens profiel: niet in de specifiek genoemde wijken (Statenkwartier/Hoge Barakken/Lindenkruis) en bouwjaar-eis niet strikt gehaald. Aanbeveling: bezichtigen — sterke kandidaat door levensloopbestendigheid en afwerkingsniveau; bespreek met cliënt of bouwjaar-eis strikt is of dat recente renovaties voldoende compenseren.",
+      "link": "https://www.hypodomus-maastricht.nl/aanbod/woningaanbod/maastricht/koop/huis-10081486-Hoffmansstraat-7/",
       "makelaar": "Zie link",
-      "shortSummary": "Binnen budget (vraagprijs €365.000 < maximaal €470.000)",
-      "features": [
-        "Roermond (past binnen voorkeursgebied: Roer‑zuid / nabijliggende delen van Roermond)",
-        "Hoekwoning / eengezinswoning — deels passend bij voorkeur (halfvrijstaand gewenst)",
-        "Ruim perceel 310 m²; carport + tweede privéparkeerplaats achter openslaande poort (oprit-achtig); geen expliciete garage; externe berging (11 m²) en interne bergruimte (21 m²) geschikt als hobbyruimte; serre en royale overkapping (2025); kunststof kozijnen met HR++ en rolluiken."
-      ],
+      "shortSummary": "Vraagprijs: € 535.000 k.k.",
+      "features": [],
       "matchCriteria": [
         {
-          "label": "Let op",
-          "client": "Volgens profiel",
-          "house": "ketel 2018 en energielabel C zijn positieve punten.",
+          "label": "📍 Regio",
+          "client": "Maastricht (voorkeur wijken: Statenkwartier, Hoge Barakken, Lindenkruis)",
+          "house": "6216 ET Maastricht (dichtbij zoekgebied)",
+          "match": true
+        },
+        {
+          "label": "💰 Budget",
+          "client": "[€595.000, €850.000]",
+          "house": "€ 535.000 k.k. · 30 % buiten budged",
+          "match": false
+        },
+        {
+          "label": "🏠 Woningtype",
+          "client": "Vrijstaand, geschakelde woning, halfvrijstaande woning",
+          "house": "geschakelde 2-onder-1-kapwoning (semi-bungalow)",
+          "match": true
+        },
+        {
+          "label": "✨ Bijzonderheden",
+          "client": "bouwjaar maximaal 20 jaar oud",
+          "house": "levensloopbestendig (slaap- & badkamer begane grond), inpandige verwarmde garage, moderne badkamer (2019), airco (2024), dak vernieuwd (2024), 6 zonnepanelen (2022), energieklasse B",
           "match": true
         }
       ],
-      "datum": "2026-04-04T22:04:15.508Z"
+      "datum": "2026-04-05T09:42:17.234Z"
+    },
+    {
+      "id": "n8n-1775382137235-hpw6y",
+      "clientName": "Irvina en Michel",
+      "address": "Hoffmansstraat 7, 6216 ET Maastricht",
+      "matchPercentage": 83,
+      "reason": "Samenvatting van de match voor Irvina en Michel: Hoffmansstraat 7 valt goed binnen het opgegeven budget (€535.000 < €600.000; ondergrens €420.000). De woning is exact het gewenste woningtype (2-onder-1-kap / tweekapper / semi-bungalow), is instapklaar en biedt concrete opties voor een hobbyruimte (verwarmde inpandige garage ca.16 m² en extra inpandige ruimte ca.20 m²). Daarmee voldoet de woning aan de belangrijkste zoekwensen. Punt van aandacht is de locatie: het huis ligt in Annadal — dit valt onder Maastricht maar staat niet letterlijk in de opsomming van voorkeurswijken; daarom geef ik “dichtbij zoekgebied”. Praktische pluspunten zijn de gelijkvloerse slaapkamer en badkamer (levensloopbestendig), ruime zuidwesttuin, recente verbeteringen (dak 2024, airco 2024, zonnepanelen 2022) en de garage met elektrische sectionaalpoort. Mogelijke aandachtspunten bij bezichtiging: de cv-ketel is uit 2011 en in huur; informeer naar huurvoorwaarden en onderhoud. Conclusie matchscore: 83% — de woning voldoet aan 5 van de 6 belangrijkste criteria (regio deels, budget ja, woningstype ja, instapklaar ja, hobbyruimte ja, overige kenmerken voldoen). Aanraden: bezichtiging plannen om locatievoorkeuren en praktische details (garageconversie, cv-huur) te verifiëren.",
+      "link": "https://www.hypodomus-maastricht.nl/aanbod/woningaanbod/maastricht/koop/huis-10081486-Hoffmansstraat-7/",
+      "makelaar": "Zie link",
+      "shortSummary": "Vraagprijs: € 535.000,- k.k.",
+      "features": [],
+      "matchCriteria": [
+        {
+          "label": "📍 Regio",
+          "client": "Maastricht (Amby, Brusselsepoort, Caberg, De Heeg, Heer, Heugem, Oud-Caberg, Randwyck, Scharn, Sint Pieter, Vroendaal)",
+          "house": "6216 ET Maastricht (dichtbij zoekgebied)",
+          "match": true
+        },
+        {
+          "label": "💰 Budget",
+          "client": "€ 420.000 - € 600.000",
+          "house": "€ 535.000,- k.k. · ja",
+          "match": true
+        },
+        {
+          "label": "🏠 Woningtype",
+          "client": "Tweekapper / 2-onder-1-kapwoning / vrijstaande woning",
+          "house": "Geschakelde 2‑onder‑1‑kap (semi‑bungalow, levensloopbestendig)",
+          "match": true
+        },
+        {
+          "label": "✨ Bijzonderheden",
+          "client": "Instapklare woning; extra ruimte voor hobbyruimte (mogelijke verbouwing garage)",
+          "house": "Instapklaar, levensloopbestendig (slaapkamer + badkamer bg), inpandige garage (verwarmd, elektra), extra inpandige ruimte 20 m², 6 zonnepanelen (2022), energielabel B, airconditioning 2024, plat dak 2024",
+          "match": true
+        }
+      ],
+      "datum": "2026-04-05T09:42:17.234Z"
+    },
+    {
+      "id": "n8n-1775382137235-pg2ux",
+      "clientName": "Marly en Mitchell Takacs",
+      "address": "Florasingel 33, Roermond",
+      "matchPercentage": 80,
+      "reason": "Samenvatting van de match (ca. 200 woorden):\nFlorasingel 33 in Roermond is een sterke kandidaat voor Marly en Mitchell Takacs. De woning valt binnen het budget (vraagprijs €365.000; klantbudget tot €470.000; minimumbudget berekend €329.000), ligt in de door hen gezochte regio (Roermond/ Roer-zuid/ Maasniel e.d.) en voldoet aan het gewenste woningtype (hoekwoning komt in de praktijk dicht bij een halfvrijstaande woning qua ligging en beleving). Daarom scoort de woning 80%: van vijf relevante criteria (regio, prijs, woningtype, oprit, garage/harde garage) worden er vier volledig vervuld — er is een oprit/carport en twee parkeermogelijkheden op eigen terrein, maar geen expliciete gesloten garage.\nSterke punten voor dit zoekprofiel: zeer kindvriendelijke ligging aan autovrij hofje met speeltuin, royaal perceel (310 m²), goede bergruimte geschikt als hobbyruimte, carport en tweede privé-parkeerplaats, recente overkapping (2025) en goede isolatie/HR++ glas. Punten om bij bezichtiging te controleren: exacte aanwezigheid en maat van een aparte garage (indien essentieel), de precieze indeling/aantal slaapkamers bij gebruiksdoel, status badkamer (lichte modernisering mogelijk) en mogelijkheden om een garage of vaste oprit met berging te realiseren. Advies: plan bezichtiging; vraag plattegronden en kadastrale gegevens en bespreek mogelijkheden voor (kleine) garage-aanbouw of het formaliseren van de carport als afgesloten stalling indien een garage een harde eis is.",
+      "link": "https://www.maatmakelaars.nl/koop/roermond/florasingel-33/",
+      "makelaar": "Zie link",
+      "shortSummary": "Vraagprijs: € 365.000,- k.k.",
+      "features": [],
+      "matchCriteria": [
+        {
+          "label": "📍 Regio",
+          "client": "Vlodrop, Melick, Herkenbosch, St. Odilienberg, Posterholt, Maasniel, Hoogvonderen, Roer-zuid, Herten, Merum, Linne",
+          "house": "Roermond (ja)",
+          "match": true
+        },
+        {
+          "label": "💰 Budget",
+          "client": "€ 329.000 - € 470.000",
+          "house": "€ 365.000,- k.k. · ja",
+          "match": true
+        },
+        {
+          "label": "🏠 Woningtype",
+          "client": "Vrijstaand of halfvrijstaand",
+          "house": "Hoekwoning (eengezinswoning, bestaande bouw, bouwjaar 1978)",
+          "match": true
+        },
+        {
+          "label": "✨ Bijzonderheden",
+          "client": "oprit en garage",
+          "house": "Carport (overdekte parkeerplaats), tweede privé-parkeerplek achter openslaande poort; ruime berging (interne en externe bergruimte), royale overkapping (2025), serre, perceel 310 m², HR++ kozijnen, rolluiken, energielabel C",
+          "match": true
+        }
+      ],
+      "datum": "2026-04-05T09:42:17.234Z"
     }
   ]
 }
