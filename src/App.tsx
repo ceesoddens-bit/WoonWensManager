@@ -140,7 +140,7 @@ function parseStructuredN8nMatches(sourceArray: any[], datum: string): any[] {
       if (percentage > 100) percentage = Math.floor(percentage / 10);
     }
     
-    const isRegionMatch = (item["afstand zoekgebied"] || '').toLowerCase().includes("ja") || (item["afstand zoekgebied"] || '').toLowerCase().includes("dichtbij");
+    const isRegionMatch = (item["afstand zoekgebied"] || '').toLowerCase().trim() === "ja" || (item["afstand zoekgebied"] || '').toLowerCase().includes("exact") || (item["afstand zoekgebied"] || '').toLowerCase().includes("binnen");
     const isBudgetMatch = (item["prijs binnen budget"] || '').toLowerCase().includes("ja");
     const isTypeMatch = (item["woning type"] || '').length > 0;
     const isSpecialMatch = true;
@@ -692,13 +692,34 @@ const MatchCard: React.FC<{ match: Match, klanten?: any[], scans?: any[] }> = ({
                   <span className="text-[10px] uppercase tracking-wider text-slate-400 font-bold">Woning biedt</span>
                 </div>
                 {match.matchCriteria.map((c, i) => {
+                  // Slim: overschrijf de match-boolean op basis van tekst-inhoud
+                  let effectiveMatch = c.match;
+
+                  // "dichtbij zoekgebied" in de woning-tekst = GEEN exacte match → rood
+                  const houseLower = (c.house || '').toLowerCase();
+                  if (houseLower.includes('dichtbij zoekgebied') || houseLower.includes('dicht bij zoekgebied') || houseLower.includes('nabij zoekgebied')) {
+                    effectiveMatch = false;
+                  }
+
+                  // Slaapkamers: klant wil minimaal X, woning heeft maar Y → rood
+                  const clientLower = (c.client || '').toLowerCase();
+                  const minBedMatch = clientLower.match(/minimaal\s+(\d+)\s*slaapkamer/);
+                  if (minBedMatch) {
+                    const wanted = parseInt(minBedMatch[1]);
+                    const houseNumMatch = houseLower.match(/(\d+)\s*slaapkamer/);
+                    if (houseNumMatch) {
+                      const has = parseInt(houseNumMatch[1]);
+                      if (has < wanted) effectiveMatch = false;
+                    }
+                  }
+
                   return (
                     <div key={i} className="grid grid-cols-[1fr_1fr_1fr] items-center px-5 py-3 hover:bg-slate-50/50 transition-colors">
                       <span className="text-sm font-semibold text-slate-600">{c.label}</span>
                       <span className="text-sm font-medium text-slate-700">{c.client}</span>
                       <div className="flex items-center gap-2">
-                        <div className={`w-2 h-2 rounded-full flex-shrink-0 ${c.match ? 'bg-emerald-400' : 'bg-red-400'}`} />
-                        <span className={`text-sm font-bold ${c.match ? 'text-emerald-700' : 'text-red-600'}`}>{c.house}</span>
+                        <div className={`w-2 h-2 rounded-full flex-shrink-0 ${effectiveMatch ? 'bg-emerald-400' : 'bg-red-400'}`} />
+                        <span className={`text-sm font-bold ${effectiveMatch ? 'text-emerald-700' : 'text-red-600'}`}>{c.house}</span>
                       </div>
                     </div>
                   );
