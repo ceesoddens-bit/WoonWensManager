@@ -181,8 +181,12 @@ const parseN8nScans = async (houses: any[]) => {
     house["m2 perseel"] = (house["m2 perseel"] || '--').toString().replace(/&#178;/g, '²');
     
     Object.keys(house).forEach(k => {
-      if (k.toLowerCase().includes('prijs') && !house.Prijs) {
+      const key = k.toLowerCase();
+      if (key.includes('prijs') && !house.Prijs) {
         house.Prijs = house[k];
+      }
+      if (key.includes('makelaar') || key.includes('verkoper')) {
+        house.Makelaar = house[k];
       }
     });
 
@@ -195,7 +199,8 @@ const parseN8nScans = async (houses: any[]) => {
     }
     
     house.Prijs = house.Prijs || 'Prijs op aanvraag';
-    house.Makelaar = house.Makelaar || 'Onbekende Makelaar';
+    house.Makelaar = house.Makelaar || house.makelaar || house.Makelaar || 'Onbekende Makelaar';
+    if (house.Makelaar === 'Zie link') house.Makelaar = 'Onbekende Makelaar';
     if (!house.Datum) house.Datum = new Date().toLocaleDateString('nl-NL');
     processed.push(house);
   }
@@ -536,8 +541,11 @@ const MatchCard: React.FC<{ match: Match, klanten?: any[], scans?: any[] }> = ({
   const openMakelaarMessage = () => {
     const today = new Date();
     const dateStr = today.toLocaleDateString('nl-NL', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-    const message = `Beste ${match.makelaar},\n\nIk zou graag een bezichtiging willen inplannen voor de ${match.address} op ${dateStr}. Laat me weten of dat mogelijk is.\n\nVriendelijke groet,\nRenaldo`;
-    setMessageModal({ title: `Bericht voor ${match.makelaar}`, message, type: 'makelaar' });
+    const realMakelaar = matchHouse?.Makelaar || matchHouse?.makelaar || match.makelaar;
+    const cleanMakelaar = realMakelaar === 'Zie link' ? 'Makelaar' : realMakelaar;
+    
+    const message = `Beste ${cleanMakelaar},\n\nIk zou graag een bezichtiging willen inplannen voor de ${match.address} op ${dateStr}. Laat me weten of dat mogelijk is.\n\nVriendelijke groet,\nRenaldo`;
+    setMessageModal({ title: `Bericht voor ${cleanMakelaar}`, message, type: 'makelaar' });
     setEditedMessage(message);
     setCopied(false);
   };
