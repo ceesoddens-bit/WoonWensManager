@@ -140,10 +140,124 @@ function parseStructuredN8nMatches(sourceArray: any[], datum: string): any[] {
       if (percentage > 100) percentage = Math.floor(percentage / 10);
     }
     
-    const isRegionMatch = (item["afstand zoekgebied"] || '').toLowerCase().trim() === "ja" || (item["afstand zoekgebied"] || '').toLowerCase().includes("exact") || (item["afstand zoekgebied"] || '').toLowerCase().includes("binnen");
-    const isBudgetMatch = (item["prijs binnen budget"] || '').toLowerCase().includes("ja");
-    const isTypeMatch = (item["woning type"] || '').length > 0;
-    const isSpecialMatch = true;
+    let isRegionMatch = (item["afstand zoekgebied"] || '').toLowerCase().trim() === "ja" || (item["afstand zoekgebied"] || '').toLowerCase().includes("exact") || (item["afstand zoekgebied"] || '').toLowerCase().includes("binnen");
+    let isBudgetMatch = (item["prijs binnen budget"] || '').toLowerCase().includes("ja");
+    let isSpecialMatch = true;
+
+    // Verbeterde fallback voor Woningtype als N8N de opbouw nog niet meestuurt
+    let isTypeMatch = true;
+    const clientType = (item["woning type klnt prof"] || '').toLowerCase();
+    const houseType = (item["woning type"] || '').toLowerCase();
+    if (clientType && houseType && clientType !== 'alle woningtypes' && !clientType.includes('n.v.t.')) {
+       const clientWords = clientType.split(/[, \/]+/).filter((w: string) => w.length > 3);
+       let matched = false;
+       const synonyms: Record<string, string[]> = {
+          'tweekapper': ['twee-onder-een', '2-onder-1', 'halfvrijstaand', 'geschakeld'],
+          'halfvrijstaand': ['2-onder-1', 'tweekapper', 'twee-onder-een', 'geschakeld'],
+          'bungalow': ['levensloopbestendig', 'gelijkvloers'],
+          'levensloopbestendig': ['bungalow', 'gelijkvloers', 'semi-bungalow'],
+          'vrijstaand': ['vrijstaande'],
+          'eengezinswoning': ['tussenwoning', 'hoekwoning', 'rijtjeshuis']
+       };
+       for (const cw of clientWords) {
+          if (houseType.includes(cw)) { matched = true; break; }
+          if (synonyms[cw]) {
+             for (const syn of synonyms[cw]) {
+                if (houseType.includes(syn)) { matched = true; break; }
+             }
+          }
+          if (matched) break;
+       }
+       isTypeMatch = matched;
+    }
+
+    // Use match_percentage_opbouw if provided by N8N
+    const opbouw = item["match_percentage_opbouw"];
+    const checkOpbouw = (val: any, fallback: boolean) => {
+      if (val === undefined || val === null) return fallback;
+      if (typeof val === 'boolean') return val;
+      if (typeof val === 'number') return val > 0;
+      if (typeof val === 'string') return val.includes('25') || val.toLowerCase().includes('true') || val.toLowerCase().includes('ja');
+      return fallback;
+    };
+
+    if (opbouw && typeof opbouw === 'object') {
+      isRegionMatch = checkOpbouw(opbouw.locatie, isRegionMatch);
+      isBudgetMatch = checkOpbouw(opbouw.prijs, isBudgetMatch);
+      isTypeMatch = checkOpbouw(opbouw["woning type"] || opbouw.woningtype || opbouw.woning_type, isTypeMatch);
+      isSpecialMatch = checkOpbouw(opbouw.bijzonderheden, isSpecialMatch);
+    } else if (typeof opbouw === 'string') {
+       try {
+         const parsedOpbouw = JSON.parse(opbouw);
+         isRegionMatch = checkOpbouw(parsedOpbouw.locatie, isRegionMatch);
+         isBudgetMatch = checkOpbouw(parsedOpbouw.prijs, isBudgetMatch);
+         isTypeMatch = checkOpbouw(parsedOpbouw["woning type"] || parsedOpbouw.woningtype || parsedOpbouw.woning_type, isTypeMatch);
+         isSpecialMatch = checkOpbouw(parsedOpbouw.bijzonderheden, isSpecialMatch);
+       } catch (e) {
+          // If it is a comma-separated string like "locatie: 25%, prijs: 0%, woning type: 0%, bijzonderheden: 25%"
+          const lowerStr = opbouw.toLowerCase();
+          const extractPct = (keywords: string[]) => {
+            for (const kw of keywords) {
+               const idx = lowerStr.indexOf(kw);
+               if (idx !== -1) {
+                  const snippet = lowerStr.substring(idx, idx + 40); // larger lookahead for text in parentheses
+                  const match = snippet.match(/:\s*(\d+)%/);
+                  if (match) {
+                     return parseInt(match[1], 10) > 0;
+                  }
+               }
+            }
+            return null;
+          };
+
+          const rRegion = extractPct(['locatie', 'regio', 'afstand']);
+          if (rRegion !== null) isRegionMatch = rRegion;
+
+          const rBudget = extractPct(['prijs', 'budget']);
+          if (rBudget !== null) isBudgetMatch = rBudget;
+
+          const rType = extractPct(['woning type', 'woningtype', 'type']);
+          if (rType !== null) isTypeMatch = rType;
+
+          const rSpecial = extractPct(['bijzonderheden', 'kenmerken', 'eisen']);
+          if (rSpecial !== null) isSpecialMatch = rSpecial;
+       }
+    }
+
+    // STRICT SANITY CHECK: Ensure the number of green checks mathematically matches the percentage.
+    // e.g., 75% means exactly 3 greens. 50% means exactly 2 greens.
+    const expectedGreens = Math.round((percentage / 100) * 4);
+    const checks = [
+      // We order them by "most likely to be the subjective mismatch" first, so if we HAVE to guess, we guess smart.
+      { name: 'special', get: () => isSpecialMatch, set: (v: boolean) => isSpecialMatch = v },
+      { name: 'type', get: () => isTypeMatch, set: (v: boolean) => isTypeMatch = v },
+      { name: 'region', get: () => isRegionMatch, set: (v: boolean) => isRegionMatch = v },
+      { name: 'budget', get: () => isBudgetMatch, set: (v: boolean) => isBudgetMatch = v }
+    ];
+
+    let currentGreens = checks.filter(c => c.get()).length;
+
+    // If we have TOO MANY greens for the percentage (e.g. 4 greens on 75%), force the most subjective ones to red.
+    while (currentGreens > expectedGreens) {
+      const activeCheck = checks.find(c => c.get());
+      if (activeCheck) {
+         activeCheck.set(false);
+         currentGreens--;
+      } else {
+         break;
+      }
+    }
+    
+    // If we have TOO FEW greens (e.g. 2 greens on 75%), force some to green.
+    while (currentGreens < expectedGreens) {
+      const inactiveCheck = [...checks].reverse().find(c => !c.get());
+      if (inactiveCheck) {
+         inactiveCheck.set(true);
+         currentGreens++;
+      } else {
+         break;
+      }
+    }
 
     return {
       id: `n8n-${Date.now()}-${index}`,
@@ -697,7 +811,7 @@ const MatchCard: React.FC<{ match: Match, klanten?: any[], scans?: any[] }> = ({
 
                   // "dichtbij zoekgebied" in de woning-tekst = GEEN exacte match → rood
                   const houseLower = (c.house || '').toLowerCase();
-                  if (houseLower.includes('dichtbij zoekgebied') || houseLower.includes('dicht bij zoekgebied') || houseLower.includes('nabij zoekgebied')) {
+                  if (houseLower.includes('dichtbij zoekgebied') || houseLower.includes('dicht bij zoekgebied') || houseLower.includes('nabij zoekgebied') || houseLower.includes('buiten zoekgebied')) {
                     effectiveMatch = false;
                   }
 
@@ -714,12 +828,20 @@ const MatchCard: React.FC<{ match: Match, klanten?: any[], scans?: any[] }> = ({
                   }
 
                   return (
-                    <div key={i} className="grid grid-cols-[1fr_1fr_1fr] items-center px-5 py-3 hover:bg-slate-50/50 transition-colors">
-                      <span className="text-sm font-semibold text-slate-600">{c.label}</span>
-                      <span className="text-sm font-medium text-slate-700">{c.client}</span>
+                    <div key={i} className={`grid grid-cols-[1fr_1fr_1fr] items-center px-5 py-3 transition-colors ${effectiveMatch ? 'hover:bg-slate-50/50' : 'bg-red-50/50'}`}>
+                      <span className={`text-sm font-semibold ${effectiveMatch ? 'text-slate-600' : 'text-red-700'}`}>{c.label}</span>
+                      <span className={`text-sm font-medium ${effectiveMatch ? 'text-slate-700' : 'text-red-800'}`}>{c.client}</span>
                       <div className="flex items-center gap-2">
-                        <div className={`w-2 h-2 rounded-full flex-shrink-0 ${effectiveMatch ? 'bg-emerald-400' : 'bg-red-400'}`} />
-                        <span className={`text-sm font-bold ${effectiveMatch ? 'text-emerald-700' : 'text-red-600'}`}>{c.house}</span>
+                        {effectiveMatch ? (
+                          <div className="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0 text-emerald-600">
+                            <CheckCircle2 size={12} />
+                          </div>
+                        ) : (
+                          <div className="w-5 h-5 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0 text-red-600">
+                             <XCircle size={12} />
+                          </div>
+                        )}
+                        <span className={`text-sm font-bold ${effectiveMatch ? 'text-emerald-700' : 'text-red-700'}`}>{c.house}</span>
                       </div>
                     </div>
                   );
