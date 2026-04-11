@@ -1000,6 +1000,63 @@ const KlantenView = ({ klanten, onAddKlant, refreshing, onRefresh }: { klanten: 
   );
 };
 
+// ── Helper componenten voor specifieke wensen ──────────────────────────────
+function CheckboxGroup({ title, items, selected, onChange }: {
+  title: string; items: string[]; selected: string[];
+  onChange: (vals: string[]) => void;
+}) {
+  const col1 = items.filter((_, i) => i % 3 === 0);
+  const col2 = items.filter((_, i) => i % 3 === 1);
+  const col3 = items.filter((_, i) => i % 3 === 2);
+  return (
+    <div className="border-t border-slate-100 pt-3">
+      <p className="text-xs font-semibold text-slate-700 mb-2">{title}</p>
+      <div className="grid grid-cols-3 gap-x-6">
+        {[col1, col2, col3].map((col, ci) => (
+          <div key={ci}>
+            {col.map(item => (
+              <label key={item} className="flex items-center gap-1.5 text-xs mb-1.5 cursor-pointer hover:text-blue-600">
+                <input
+                  type="checkbox"
+                  checked={selected.includes(item)}
+                  onChange={e => onChange(e.target.checked ? [...selected, item] : selected.filter(v => v !== item))}
+                  className="accent-blue-500 w-3.5 h-3.5"
+                />
+                {item}
+              </label>
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function OnderhoudGroup({ title, fieldName, value, onChange }: {
+  title: string; fieldName: string; value: string; onChange: (v: string) => void;
+}) {
+  const opts = ['Slecht','Slecht tot matig','Matig','Matig tot redelijk','Redelijk','Redelijk tot goed','Goed','Goed tot uitstekend','Uitstekend'];
+  return (
+    <div className="border-t border-slate-100 pt-3">
+      <p className="text-xs font-semibold text-slate-700 mb-2">{title}</p>
+      <div className="grid grid-cols-3 gap-x-6">
+        {[opts.slice(0,3), opts.slice(3,6), opts.slice(6)].map((col, ci) => (
+          <div key={ci}>
+            {col.map(opt => (
+              <label key={opt} className="flex items-center gap-1.5 text-xs mb-1.5 cursor-pointer hover:text-blue-600">
+                <input type="radio" name={fieldName} value={opt} checked={value === opt}
+                  onChange={() => onChange(opt)} className="accent-blue-500 w-3.5 h-3.5" />
+                {opt}
+              </label>
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+// ───────────────────────────────────────────────────────────────────────────
+
 export default function App() {
   const [activeView, setActiveView] = useState<View>(() => {
     const saved = localStorage.getItem('woonwensActiveView');
@@ -1087,8 +1144,24 @@ export default function App() {
 
   const [refreshingScans, setRefreshingScans] = useState(false);
   const [showAddKlantModal, setShowAddKlantModal] = useState(false);
+  const [addKlantStep, setAddKlantStep] = useState(1);
+  const [locatieError, setLocatieError] = useState(false);
+  const [showSpecifiekeWensen, setShowSpecifiekeWensen] = useState(false);
   const [refreshingKlanten, setRefreshingKlanten] = useState(false);
-  const [newKlant, setNewKlant] = useState({ Naam: '', Regio: '', BijzonderhedenRegio: '', Prijsklasse: '', Woningtype: '', BijzondereKenmerken: '' });
+  const [newKlant, setNewKlant] = useState({
+    Naam: '', Regio: '', BijzonderhedenRegio: '',
+    GeselecteerdeLocaties: [] as string[], LocatieZoekterm: '', LocatieFilter: 'Alles',
+    Soort: 'koop', Prijsklasse: '', PrijsMax: '', Bouwvorm: 'beide',
+    Objectsoort: 'woonhuis_appartement', Woonoppervlakte: '', Perceeloppervlakte: '',
+    AantalKamers: '', AantalSlaapkamers: '', Bestemming: ['permanente_bewoning'] as string[],
+    DubbeleBewoning: [] as string[], Energielabel: '', Buitenruimte: [] as string[],
+    TypeWoning: [] as string[], SoortWoning: [] as string[], SoortAppartement: [] as string[],
+    Ligging: [] as string[], Bijzonderheden: [] as string[], Toegankelijkheid: [] as string[],
+    OnderhoudBinnen: '', OnderhoudBuiten: '',
+    Parkeren: [] as string[], Voorzieningen: [] as string[], Eigendom: [] as string[],
+    BouwjaarVan: '', BouwjaarTm: '', MinMatchPercentage: '80', Prioriteiten: [] as string[],
+    Email: '', Notificatie: 'direct', BijzondereKenmerken: '', Woningtype: '',
+  });
   const [submittingKlant, setSubmittingKlant] = useState(false);
 
   const refreshKlanten = async () => {
@@ -1104,23 +1177,75 @@ export default function App() {
     }
   };
 
+  const resetAddKlantForm = () => {
+    setAddKlantStep(1);
+    setLocatieError(false);
+    setShowSpecifiekeWensen(false);
+    setNewKlant({
+      Naam: '', Regio: '', BijzonderhedenRegio: '',
+      GeselecteerdeLocaties: [], LocatieZoekterm: '', LocatieFilter: 'Alles',
+      Soort: 'koop', Prijsklasse: '', PrijsMax: '', Bouwvorm: 'beide',
+      Objectsoort: 'woonhuis_appartement', Woonoppervlakte: '', Perceeloppervlakte: '',
+      AantalKamers: '', AantalSlaapkamers: '', Bestemming: ['permanente_bewoning'],
+      DubbeleBewoning: [], Energielabel: '', Buitenruimte: [],
+      TypeWoning: [], SoortWoning: [], SoortAppartement: [], Ligging: [],
+      Bijzonderheden: [], Toegankelijkheid: [], OnderhoudBinnen: '', OnderhoudBuiten: '',
+      Parkeren: [], Voorzieningen: [], Eigendom: [],
+      BouwjaarVan: '', BouwjaarTm: '', MinMatchPercentage: '80', Prioriteiten: [],
+      Email: '', Notificatie: 'direct', BijzondereKenmerken: '', Woningtype: '',
+    });
+  };
+
   const handleAddKlant = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmittingKlant(true);
     try {
+      const payload = {
+        Naam: newKlant.Naam,
+        Regio: newKlant.GeselecteerdeLocaties.length > 0 ? newKlant.GeselecteerdeLocaties.join(', ') : newKlant.Regio,
+        BijzonderhedenRegio: newKlant.BijzonderhedenRegio,
+        Prijsklasse: (newKlant.Prijsklasse || newKlant.PrijsMax)
+          ? `€ ${newKlant.Prijsklasse || 0} – € ${newKlant.PrijsMax || newKlant.Prijsklasse}`
+          : '',
+        Woningtype: [...newKlant.TypeWoning, ...newKlant.SoortWoning, ...newKlant.SoortAppartement].join(', ') || newKlant.Objectsoort,
+        BijzondereKenmerken: [
+          ...newKlant.Ligging, ...newKlant.Bijzonderheden, ...newKlant.Toegankelijkheid,
+          ...newKlant.Buitenruimte, ...newKlant.Parkeren, ...newKlant.Voorzieningen, ...newKlant.Eigendom,
+          newKlant.OnderhoudBinnen ? `Onderhoud binnen: ${newKlant.OnderhoudBinnen}` : '',
+          newKlant.OnderhoudBuiten ? `Onderhoud buiten: ${newKlant.OnderhoudBuiten}` : '',
+          newKlant.BouwjaarVan ? `Bouwjaar v.a. ${newKlant.BouwjaarVan}` : '',
+          newKlant.BouwjaarTm ? `t/m ${newKlant.BouwjaarTm}` : '',
+          newKlant.AantalKamers ? `Min. ${newKlant.AantalKamers} kamers` : '',
+          newKlant.AantalSlaapkamers ? `Min. ${newKlant.AantalSlaapkamers} slaapkamers` : '',
+          newKlant.BijzondereKenmerken,
+        ].filter(Boolean).join(', '),
+        Soort: newKlant.Soort,
+        Bouwvorm: newKlant.Bouwvorm,
+        Objectsoort: newKlant.Objectsoort,
+        Woonoppervlakte: newKlant.Woonoppervlakte,
+        Perceeloppervlakte: newKlant.Perceeloppervlakte,
+        AantalKamers: newKlant.AantalKamers,
+        AantalSlaapkamers: newKlant.AantalSlaapkamers,
+        Bestemming: newKlant.Bestemming.join(', '),
+        DubbeleBewoning: newKlant.DubbeleBewoning.join(', '),
+        Energielabel: newKlant.Energielabel,
+        MinMatchPercentage: newKlant.MinMatchPercentage,
+        Prioriteiten: newKlant.Prioriteiten.join(', '),
+        Email: newKlant.Email,
+        Notificatie: newKlant.Notificatie,
+      };
       const res = await fetch(N8N_ADD_KLANT_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newKlant)
+        body: JSON.stringify(payload)
       });
-      
       if (res.ok) {
-         alert('Klant succesvol toegestuurd naar N8N!');
-         setShowAddKlantModal(false);
-         setNewKlant({ Naam: '', Regio: '', BijzonderhedenRegio: '', Prijsklasse: '', Woningtype: '', BijzondereKenmerken: '' });
-         refreshKlanten();
+        alert('Klant succesvol toegestuurd naar N8N!');
+        setShowAddKlantModal(false);
+        resetAddKlantForm();
+        refreshKlanten();
       } else {
-         alert('Er is iets misgegaan bij het versturen naar N8N.');
+        alert('Er is iets misgegaan bij het versturen naar N8N.');
       }
     } catch (e) {
       alert('Fout bij verbinding met N8N Webhook.');
@@ -1712,71 +1837,512 @@ export default function App() {
               ) : null}
             </AnimatePresence>
             
-            {/* Add Klant Modal */}
+            {/* Add Klant Wizard - multi-step accordion */}
             <AnimatePresence>
               {showAddKlantModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
                   <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    onClick={() => setShowAddKlantModal(false)}
+                    initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                    onClick={() => { setShowAddKlantModal(false); resetAddKlantForm(); }}
                     className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
                   />
                   <motion.div
-                    initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                    initial={{ opacity: 0, scale: 0.97, y: 20 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                    className="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-200"
+                    exit={{ opacity: 0, scale: 0.97, y: 20 }}
+                    className="relative w-full bg-white shadow-2xl border border-slate-200 flex flex-col overflow-hidden"
+                    style={{ maxWidth: 980, maxHeight: '92vh', borderRadius: 6 }}
                   >
-                    <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-                      <h3 className="text-xl font-bold text-[#2d3e50] flex items-center gap-2">
-                        <UserPlus className="text-[#e67e22]" />
-                        Nieuw Zoekprofiel Toevoegen
+                    {/* Modal header */}
+                    <div className="px-5 py-3 border-b border-slate-200 flex justify-between items-center bg-white flex-shrink-0">
+                      <h3 className="text-sm font-semibold text-[#2d3e50] flex items-center gap-2">
+                        <UserPlus className="text-[#e67e22]" size={17} />
+                        Nieuw zoekprofiel toevoegen
                       </h3>
-                      <button onClick={() => setShowAddKlantModal(false)} className="p-2 hover:bg-slate-200 rounded-full text-slate-500">
-                        <X size={20} />
+                      <button type="button" onClick={() => { setShowAddKlantModal(false); resetAddKlantForm(); }}
+                        className="p-1.5 hover:bg-slate-100 rounded-full text-slate-400">
+                        <X size={17} />
                       </button>
                     </div>
 
-                    <form onSubmit={handleAddKlant} className="p-8 space-y-5">
-                      <div>
-                        <label className="block text-sm font-bold text-slate-700 mb-2">Naam / Achternaam *</label>
-                        <input required type="text" value={newKlant.Naam} onChange={e => setNewKlant({...newKlant, Naam: e.target.value})} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#e67e22] focus:border-[#e67e22] transition-all outline-none" placeholder="Bijv. Familie de Vries" />
-                      </div>
-                      <div className="grid grid-cols-2 gap-5">
-                        <div>
-                          <label className="block text-sm font-bold text-slate-700 mb-2">Maximum Budget *</label>
-                          <input required type="text" value={newKlant.Prijsklasse} onChange={e => setNewKlant({...newKlant, Prijsklasse: e.target.value})} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#e67e22] focus:border-[#e67e22] outline-none" placeholder="€ 450.000" />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-bold text-slate-700 mb-2">Woningtype</label>
-                          <input type="text" value={newKlant.Woningtype} onChange={e => setNewKlant({...newKlant, Woningtype: e.target.value})} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#e67e22] focus:border-[#e67e22] outline-none" placeholder="Vrijstaand, of 2-onder-1-kap" />
-                        </div>
-                      </div>
-                      <div>
-                        <label className="block text-sm font-bold text-slate-700 mb-2">Zoekregio *</label>
-                        <input required type="text" value={newKlant.Regio} onChange={e => setNewKlant({...newKlant, Regio: e.target.value})} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#e67e22] focus:border-[#e67e22] transition-all outline-none" placeholder="Maastricht, Beek, of omliggende dorpen" />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-bold text-slate-700 mb-2">Bijzonderheden Regio</label>
-                        <input type="text" value={newKlant.BijzonderhedenRegio} onChange={e => setNewKlant({...newKlant, BijzonderhedenRegio: e.target.value})} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#e67e22] focus:border-[#e67e22] transition-all outline-none" placeholder="Bijv. buitenwijk, specifieke straten, afstanden..." />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-bold text-slate-700 mb-2">Bijzondere Kenmerken & Wensen</label>
-                        <textarea rows={3} value={newKlant.BijzondereKenmerken} onChange={e => setNewKlant({...newKlant, BijzondereKenmerken: e.target.value})} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#e67e22] focus:border-[#e67e22] transition-all outline-none" placeholder="Minimaal 4 slaapkamers, grote tuin, hobbyruimte..." />
-                      </div>
-                      
-                      <div className="pt-4 flex gap-4">
-                        <button type="button" onClick={() => setShowAddKlantModal(false)} className="flex-1 py-3.5 px-6 rounded-xl font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors">
-                          Annuleren
+                    {/* Scrollable accordion body */}
+                    <div className="overflow-y-auto flex-1">
+
+                      {/* ── Stap 1: Relatie ── */}
+                      <div className="border-b border-slate-200">
+                        <button type="button" onClick={() => setAddKlantStep(addKlantStep === 1 ? 0 : 1)}
+                          className={`w-full flex items-center gap-2 px-5 py-3 text-left text-sm font-semibold transition-colors
+                            ${addKlantStep === 1 ? 'bg-[#cfe2f3] text-[#1a5c8a]' : 'bg-[#e8f4fb] text-[#2d3e50] hover:bg-[#daeaf7]'}`}>
+                          <span className="text-xs">{addKlantStep === 1 ? '▾' : '▸'}</span>
+                          Stap 1. Relatie
                         </button>
-                        <button type="submit" disabled={submittingKlant} className="flex-1 py-3.5 px-6 rounded-xl font-bold bg-[#141e2b] text-white hover:bg-slate-800 transition-all flex justify-center items-center gap-2">
-                          {submittingKlant ? <RefreshCw size={20} className="animate-spin" /> : <UserPlus size={20} />}
-                          Profiel Opslaan
-                        </button>
+                        {addKlantStep === 1 && (
+                          <div className="px-8 py-5 bg-white">
+                            <div className="max-w-xs">
+                              <label className="block text-xs font-semibold text-slate-600 mb-1.5">Naam klant *</label>
+                              <input required type="text" value={newKlant.Naam}
+                                onChange={e => setNewKlant({ ...newKlant, Naam: e.target.value })}
+                                className="w-full px-3 py-1.5 border border-slate-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-400"
+                                placeholder="Bijv. Familie de Vries" />
+                            </div>
+                            <div className="mt-5 flex justify-center">
+                              <button type="button" disabled={!newKlant.Naam.trim()}
+                                onClick={() => setAddKlantStep(2)}
+                                className="px-10 py-1.5 bg-[#5b9bd5] hover:bg-[#4a8ac4] disabled:opacity-40 text-white text-sm font-medium rounded border border-[#3a7ab4] transition-colors">
+                                Volgende stap
+                              </button>
+                            </div>
+                          </div>
+                        )}
                       </div>
-                    </form>
+
+                      {/* ── Stap 2: Locatie ── */}
+                      <div className="border-b border-slate-200">
+                        <button type="button" onClick={() => setAddKlantStep(addKlantStep === 2 ? 0 : 2)}
+                          className={`w-full flex items-center gap-2 px-5 py-3 text-left text-sm font-semibold transition-colors
+                            ${addKlantStep === 2 ? 'bg-[#cfe2f3] text-[#1a5c8a]' : 'bg-[#e8f4fb] text-[#2d3e50] hover:bg-[#daeaf7]'}`}>
+                          <span className="text-xs">{addKlantStep === 2 ? '▾' : '▸'}</span>
+                          Stap 2. Locatie
+                        </button>
+                        {addKlantStep === 2 && (
+                          <div className="px-8 py-5 bg-white">
+                            <div className="flex gap-5">
+                              {/* Left: search */}
+                              <div className="w-64 flex-shrink-0">
+                                <p className="text-xs text-slate-600 mb-1.5">Selecteer een locatie</p>
+                                <div className="flex gap-1 mb-1.5">
+                                  <select value={newKlant.LocatieFilter}
+                                    onChange={e => setNewKlant({ ...newKlant, LocatieFilter: e.target.value })}
+                                    className="px-1.5 py-1 border border-slate-300 rounded text-xs bg-white focus:outline-none">
+                                    {['Alles','Provincie','Gemeente','Wijk','Postcodegebied'].map(f => <option key={f}>{f}</option>)}
+                                  </select>
+                                  <div className="flex-1 flex items-center border border-slate-300 rounded bg-white px-2 gap-1">
+                                    <input type="text" value={newKlant.LocatieZoekterm}
+                                      onChange={e => setNewKlant({ ...newKlant, LocatieZoekterm: e.target.value })}
+                                      onKeyDown={e => {
+                                        if (e.key === 'Enter') {
+                                          e.preventDefault();
+                                          const loc = newKlant.LocatieZoekterm.trim();
+                                          if (loc && !newKlant.GeselecteerdeLocaties.includes(loc)) {
+                                            setNewKlant({ ...newKlant, GeselecteerdeLocaties: [...newKlant.GeselecteerdeLocaties, loc], LocatieZoekterm: '' });
+                                            setLocatieError(false);
+                                          }
+                                        }
+                                      }}
+                                      className="flex-1 py-1 text-xs outline-none bg-transparent"
+                                      placeholder="Typ uw locatie" />
+                                    <button type="button" onClick={() => {
+                                      const loc = newKlant.LocatieZoekterm.trim();
+                                      if (loc && !newKlant.GeselecteerdeLocaties.includes(loc)) {
+                                        setNewKlant({ ...newKlant, GeselecteerdeLocaties: [...newKlant.GeselecteerdeLocaties, loc], LocatieZoekterm: '' });
+                                        setLocatieError(false);
+                                      }
+                                    }} className="text-slate-400 hover:text-blue-500">
+                                      <Search size={13} />
+                                    </button>
+                                  </div>
+                                </div>
+                                {newKlant.GeselecteerdeLocaties.length === 0 ? (
+                                  <p className="text-xs text-slate-400 italic">U heeft nog geen nieuwe locaties toegevoegd.</p>
+                                ) : (
+                                  <div className="flex flex-wrap gap-1 mt-1.5">
+                                    {newKlant.GeselecteerdeLocaties.map((loc, i) => (
+                                      <span key={i} className="flex items-center gap-1 bg-blue-50 text-blue-700 text-xs px-2 py-0.5 rounded border border-blue-200">
+                                        {loc}
+                                        <button type="button"
+                                          onClick={() => setNewKlant({ ...newKlant, GeselecteerdeLocaties: newKlant.GeselecteerdeLocaties.filter((_, idx) => idx !== i) })}
+                                          className="hover:text-red-600 leading-none ml-0.5">×</button>
+                                      </span>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                              {/* Right: map */}
+                              <div className="flex-1" style={{ minHeight: 360 }}>
+                                <iframe width="100%" height="100%"
+                                  style={{ border: '1px solid #ccc', minHeight: 360 }}
+                                  src="https://www.openstreetmap.org/export/embed.html?bbox=5.5%2C50.7%2C6.5%2C51.7&layer=mapnik"
+                                  title="Kaart regio" />
+                              </div>
+                            </div>
+                            {locatieError && (
+                              <div className="mt-3 border-l-4 border-red-500 bg-red-50 px-3 py-2">
+                                <p className="text-red-600 text-xs">Selecteer a.u.b. een of meerdere locaties</p>
+                              </div>
+                            )}
+                            <div className="mt-5 flex justify-center">
+                              <button type="button" onClick={() => {
+                                if (newKlant.GeselecteerdeLocaties.length === 0) { setLocatieError(true); return; }
+                                setLocatieError(false);
+                                setNewKlant({ ...newKlant, Regio: newKlant.GeselecteerdeLocaties.join(', ') });
+                                setAddKlantStep(3);
+                              }} className="px-10 py-1.5 bg-[#5b9bd5] hover:bg-[#4a8ac4] text-white text-sm font-medium rounded border border-[#3a7ab4] transition-colors">
+                                Volgende stap
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* ── Stap 3: Woonwensen ── */}
+                      <div className="border-b border-slate-200">
+                        <button type="button" onClick={() => setAddKlantStep(addKlantStep === 3 ? 0 : 3)}
+                          className={`w-full flex items-center gap-2 px-5 py-3 text-left text-sm font-semibold transition-colors
+                            ${addKlantStep === 3 ? 'bg-[#cfe2f3] text-[#1a5c8a]' : 'bg-[#e8f4fb] text-[#2d3e50] hover:bg-[#daeaf7]'}`}>
+                          <span className="text-xs">{addKlantStep === 3 ? '▾' : '▸'}</span>
+                          Stap 3. Woonwensen
+                        </button>
+                        {addKlantStep === 3 && (
+                          <div className="px-8 py-5 bg-white">
+                            {/* Match percentage */}
+                            <div className="flex items-center gap-2 text-xs text-slate-700 mb-5">
+                              <span>Stuur alleen emails met woningen die voor minimaal</span>
+                              <select value={newKlant.MinMatchPercentage}
+                                onChange={e => setNewKlant({ ...newKlant, MinMatchPercentage: e.target.value })}
+                                className="px-1.5 py-1 border border-slate-300 rounded text-xs bg-white focus:outline-none">
+                                {['60','65','70','75','80','85','90','95','100'].map(p => <option key={p}>{p}%</option>)}
+                              </select>
+                              <span>aan de woonwensen voldoen.</span>
+                            </div>
+
+                            <div className="flex gap-6">
+                              {/* Left column */}
+                              <div style={{ width: 175 }} className="flex-shrink-0 space-y-4">
+                                <div>
+                                  <p className="text-xs font-semibold text-slate-700 mb-1.5">Soort</p>
+                                  {[['koop','Koop'],['huur','Huur']].map(([v,l]) => (
+                                    <label key={v} className="flex items-center gap-2 text-xs mb-1 cursor-pointer">
+                                      <input type="radio" name="soort_wz" value={v} checked={newKlant.Soort === v}
+                                        onChange={() => setNewKlant({...newKlant, Soort: v})} className="accent-blue-500" />
+                                      {l}
+                                    </label>
+                                  ))}
+                                </div>
+                                <div>
+                                  <p className="text-xs font-semibold text-slate-700 mb-1.5">Prijsklasse</p>
+                                  <div className="flex items-center gap-1 mb-1">
+                                    <span className="text-red-500 text-[10px]">*</span>
+                                    <span className="text-xs text-slate-600 w-7">Van</span>
+                                    <span className="text-xs">€</span>
+                                    <input type="text" value={newKlant.Prijsklasse}
+                                      onChange={e => setNewKlant({...newKlant, Prijsklasse: e.target.value})}
+                                      className="w-20 px-1.5 py-1 border border-slate-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-400" />
+                                  </div>
+                                  <div className="flex items-center gap-1">
+                                    <span className="text-xs text-slate-600 w-11">Max.</span>
+                                    <span className="text-xs">€</span>
+                                    <input type="text" value={newKlant.PrijsMax}
+                                      onChange={e => setNewKlant({...newKlant, PrijsMax: e.target.value})}
+                                      className="w-20 px-1.5 py-1 border border-slate-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-400" />
+                                  </div>
+                                </div>
+                                <div>
+                                  <p className="text-xs font-semibold text-slate-700 mb-1.5">Bouwvorm</p>
+                                  {[['bestaand','Bestaande bouw'],['nieuwbouw','Nieuwbouw'],['beide','Beide']].map(([v,l]) => (
+                                    <label key={v} className="flex items-center gap-2 text-xs mb-1 cursor-pointer">
+                                      <input type="radio" name="bouwvorm_wz" value={v} checked={newKlant.Bouwvorm === v}
+                                        onChange={() => setNewKlant({...newKlant, Bouwvorm: v})} className="accent-blue-500" />
+                                      {l}
+                                    </label>
+                                  ))}
+                                </div>
+                                <div>
+                                  <p className="text-xs font-semibold text-slate-700 mb-1.5">Objectsoort</p>
+                                  {[['woonhuis_appartement','Woonhuis / Appartement'],['woonhuis','Woonhuis'],['appartement','Appartement'],['bouwgrond','Bouwgrond'],['overig','Overig']].map(([v,l]) => (
+                                    <label key={v} className="flex items-center gap-2 text-xs mb-1 cursor-pointer">
+                                      <input type="radio" name="objectsoort_wz" value={v} checked={newKlant.Objectsoort === v}
+                                        onChange={() => setNewKlant({...newKlant, Objectsoort: v})} className="accent-blue-500" />
+                                      {l}
+                                    </label>
+                                  ))}
+                                </div>
+                                <div className="border-t border-slate-200 pt-2">
+                                  <button type="button" onClick={() => setShowSpecifiekeWensen(!showSpecifiekeWensen)}
+                                    className="flex items-center gap-1.5 text-[#1a5c8a] text-xs font-bold uppercase tracking-wide">
+                                    <span>{showSpecifiekeWensen ? '▾' : '▸'}</span>
+                                    Specifieke wensen
+                                  </button>
+                                </div>
+                              </div>
+
+                              {/* Middle column */}
+                              <div className="flex-1 space-y-4">
+                                <div>
+                                  <p className="text-xs font-semibold text-slate-700 mb-1.5">Woonoppervlakte</p>
+                                  <div className="flex items-center gap-1.5">
+                                    <input type="text" value={newKlant.Woonoppervlakte} onChange={e => setNewKlant({...newKlant, Woonoppervlakte: e.target.value})}
+                                      className="w-28 px-2 py-1.5 border border-slate-300 rounded text-xs bg-slate-50 focus:outline-none focus:ring-1 focus:ring-blue-400" placeholder="Minimaal:" />
+                                    <span className="text-xs text-slate-500">m²</span>
+                                  </div>
+                                </div>
+                                <div>
+                                  <p className="text-xs font-semibold text-slate-700 mb-1.5">Perceeloppervlakte</p>
+                                  <div className="flex items-center gap-1.5">
+                                    <input type="text" value={newKlant.Perceeloppervlakte} onChange={e => setNewKlant({...newKlant, Perceeloppervlakte: e.target.value})}
+                                      className="w-28 px-2 py-1.5 border border-slate-300 rounded text-xs bg-slate-50 focus:outline-none focus:ring-1 focus:ring-blue-400" placeholder="Minimaal:" />
+                                    <span className="text-xs text-slate-500">m²</span>
+                                  </div>
+                                </div>
+                                <div>
+                                  <p className="text-xs font-semibold text-slate-700 mb-1.5">Aantal kamers</p>
+                                  <input type="text" value={newKlant.AantalKamers} onChange={e => setNewKlant({...newKlant, AantalKamers: e.target.value})}
+                                    className="w-28 px-2 py-1.5 border border-slate-300 rounded text-xs bg-slate-50 focus:outline-none focus:ring-1 focus:ring-blue-400" placeholder="Minimaal:" />
+                                </div>
+                                <div>
+                                  <p className="text-xs font-semibold text-slate-700 mb-1.5">Aantal slaapkamers</p>
+                                  <input type="text" value={newKlant.AantalSlaapkamers} onChange={e => setNewKlant({...newKlant, AantalSlaapkamers: e.target.value})}
+                                    className="w-28 px-2 py-1.5 border border-slate-300 rounded text-xs bg-slate-50 focus:outline-none focus:ring-1 focus:ring-blue-400" placeholder="Minimaal:" />
+                                </div>
+                                <div>
+                                  <p className="text-xs font-semibold text-slate-700 mb-1.5">Bestemming</p>
+                                  {[['permanente_bewoning','Permanente bewoning'],['recreatiewoning','Recreatiewoning']].map(([v,l]) => (
+                                    <label key={v} className="flex items-center gap-2 text-xs mb-1 cursor-pointer">
+                                      <input type="checkbox" checked={newKlant.Bestemming.includes(v)}
+                                        onChange={e => setNewKlant({...newKlant, Bestemming: e.target.checked ? [...newKlant.Bestemming, v] : newKlant.Bestemming.filter(x => x !== v)})}
+                                        className="accent-blue-500" />
+                                      {l}
+                                    </label>
+                                  ))}
+                                </div>
+                                <div>
+                                  <p className="text-xs font-semibold text-slate-700 mb-1.5">Dubbele bewoning</p>
+                                  {['Dubbele bewoning mogelijk','Dubbele bewoning aanwezig'].map(db => (
+                                    <label key={db} className="flex items-center gap-2 text-xs mb-1 cursor-pointer">
+                                      <input type="checkbox" checked={newKlant.DubbeleBewoning.includes(db)}
+                                        onChange={e => setNewKlant({...newKlant, DubbeleBewoning: e.target.checked ? [...newKlant.DubbeleBewoning, db] : newKlant.DubbeleBewoning.filter(v => v !== db)})}
+                                        className="accent-blue-500" />
+                                      {db}
+                                    </label>
+                                  ))}
+                                </div>
+                                <div>
+                                  <p className="text-xs font-semibold text-slate-700 mb-1.5">Energielabel</p>
+                                  <select value={newKlant.Energielabel} onChange={e => setNewKlant({...newKlant, Energielabel: e.target.value})}
+                                    className="w-32 px-1.5 py-1.5 border border-slate-300 rounded text-xs bg-white focus:outline-none">
+                                    <option value="">Selecteer</option>
+                                    {['A+++','A++','A+','A','B','C','D','E','F','G'].map(l => <option key={l}>{l}</option>)}
+                                  </select>
+                                </div>
+                                <div>
+                                  <p className="text-xs font-semibold text-slate-700 mb-1.5">Buitenruimte</p>
+                                  {['Balkon','Tuin','Dakterras'].map(br => (
+                                    <label key={br} className="flex items-center gap-2 text-xs mb-1 cursor-pointer">
+                                      <input type="checkbox" checked={newKlant.Buitenruimte.includes(br)}
+                                        onChange={e => setNewKlant({...newKlant, Buitenruimte: e.target.checked ? [...newKlant.Buitenruimte, br] : newKlant.Buitenruimte.filter(v => v !== br)})}
+                                        className="accent-blue-500" />
+                                      {br}
+                                    </label>
+                                  ))}
+                                </div>
+                              </div>
+
+                              {/* Right: Bepaal prioriteit */}
+                              <div className="w-52 flex-shrink-0">
+                                <div className="bg-[#dbeaf7] rounded border border-[#b8d4e8] p-4">
+                                  <h4 className="font-bold text-[#1a5276] text-sm mb-0.5">Bepaal prioriteit</h4>
+                                  <p className="text-xs text-slate-600 mb-3">Klik op een ster als iets een absolute eis is.</p>
+                                  <div className="space-y-1.5 mb-3">
+                                    {[['locatie','Locatie(s)'],['prijs','Prijsklasse'],['bouwvorm','Bouwvorm'],['objectsoort','Objectsoort'],['bewoning','Permanente bewoning']].map(([key,label]) => (
+                                      <button key={key} type="button"
+                                        onClick={() => setNewKlant({...newKlant, Prioriteiten: newKlant.Prioriteiten.includes(key) ? newKlant.Prioriteiten.filter(p => p !== key) : [...newKlant.Prioriteiten, key]})}
+                                        className="flex items-center gap-2 w-full text-left text-xs text-slate-700 hover:text-[#1a5276] group">
+                                        <span className={`text-base transition-colors ${newKlant.Prioriteiten.includes(key) ? 'text-[#1a5c8a]' : 'text-slate-300 group-hover:text-[#1a5c8a]'}`}>
+                                          {newKlant.Prioriteiten.includes(key) ? '★' : '☆'}
+                                        </span>
+                                        {label}
+                                      </button>
+                                    ))}
+                                  </div>
+                                  <div className="border-t border-[#b8d4e8] pt-2.5 mb-2.5">
+                                    <p className="text-xs font-bold text-slate-700 mb-1">Stuur eigen woningaanbod</p>
+                                    <label className="flex items-center gap-1.5 text-xs text-slate-600 cursor-pointer">
+                                      <input type="checkbox" defaultChecked className="accent-blue-500" />
+                                      én dat van andere makelaarskantoren
+                                    </label>
+                                  </div>
+                                  <div className="border-t border-[#b8d4e8] pt-2.5 mb-2.5">
+                                    <p className="text-xs font-bold text-slate-700 mb-1">Beschikbaar aanbod vanaf:</p>
+                                    <select className="w-full px-1.5 py-1 border border-slate-300 rounded text-xs bg-white focus:outline-none">
+                                      <option>Afgelopen 2 weken</option>
+                                      <option>Afgelopen maand</option>
+                                      <option>Afgelopen 3 maanden</option>
+                                      <option>Alle aanbod</option>
+                                    </select>
+                                  </div>
+                                  <div className="border-t border-[#b8d4e8] pt-2.5 text-center">
+                                    <p className="text-xs font-bold text-slate-700 mb-1">Aantal gevonden woningen:</p>
+                                    <p className="text-3xl font-black text-slate-800">0</p>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Specifieke wensen uitklapper */}
+                            {showSpecifiekeWensen && (
+                              <div className="mt-4 border-t-2 border-[#1a5c8a]/20 pt-4">
+                                <p className="text-xs font-bold text-[#1a5c8a] uppercase tracking-wide mb-3 flex items-center gap-1.5">
+                                  <span>▾</span> Specifieke wensen
+                                </p>
+                                <CheckboxGroup title="Type woning"
+                                  items={['Verspringend','Halfvrijstaande woning','Hoekwoning','2-onder-1-kap','Vrijstaande woning','Geschakelde 2-onder-1-kap','Eindwoning','Tussenwoning','Geschakelde woning']}
+                                  selected={newKlant.TypeWoning} onChange={vals => setNewKlant({...newKlant, TypeWoning: vals})} />
+                                <CheckboxGroup title="Soort woning"
+                                  items={['Eengezinswoning','Bungalow','Stacaravan','Herenhuis','Woonboerderij','Woonwagen','Villa','Grachtenpand','Landgoed','Landhuis','Woonboot']}
+                                  selected={newKlant.SoortWoning} onChange={vals => setNewKlant({...newKlant, SoortWoning: vals})} />
+                                <CheckboxGroup title="Soort appartement"
+                                  items={['Tussenverdieping','Studentenkamer','Penthouse','Portiekflat','Maisonnette','Boven woning','Dubbel benedenhuis','Portiekwoning','Beneden + bovenwoning','Galerijflat','Benedenwoning']}
+                                  selected={newKlant.SoortAppartement} onChange={vals => setNewKlant({...newKlant, SoortAppartement: vals})} />
+                                <CheckboxGroup title="Ligging"
+                                  items={['Bedrijventerrein','Landelijk gelegen','In centrum','Open ligging','Vrij uitzicht','Zeezicht','Aan drukke weg','Aan water','Beschutte ligging','In bosrijke omgeving','Buiten bebouwde kom','Aan park','In woonwijk','Aan rustige weg','Aan bosrand','Aan vaarwater']}
+                                  selected={newKlant.Ligging} onChange={vals => setNewKlant({...newKlant, Ligging: vals})} />
+
+                                {/* Bijzonderheden & Toegankelijkheid */}
+                                <div className="border-t border-slate-100 pt-3 flex gap-8">
+                                  <div className="flex-1">
+                                    <p className="text-xs font-semibold text-slate-700 mb-2">Bijzonderheden</p>
+                                    {['Gedeeltelijk gestoffeerd','Gemeubileerd','Gestoffeerd','Kluswoning'].map(item => (
+                                      <label key={item} className="flex items-center gap-1.5 text-xs mb-1.5 cursor-pointer hover:text-blue-600">
+                                        <input type="checkbox" checked={newKlant.Bijzonderheden.includes(item)}
+                                          onChange={e => setNewKlant({...newKlant, Bijzonderheden: e.target.checked ? [...newKlant.Bijzonderheden, item] : newKlant.Bijzonderheden.filter(v => v !== item)})}
+                                          className="accent-blue-500 w-3.5 h-3.5" />
+                                        {item}
+                                      </label>
+                                    ))}
+                                  </div>
+                                  <div className="flex-1">
+                                    <p className="text-xs font-semibold text-slate-700 mb-2">Toegankelijkheid</p>
+                                    {['Geschikt voor ouderen','Geschikt voor minder validen','Slaapkamer op de begane grond','Badkamer op de begane grond'].map(item => (
+                                      <label key={item} className="flex items-center gap-1.5 text-xs mb-1.5 cursor-pointer hover:text-blue-600">
+                                        <input type="checkbox" checked={newKlant.Toegankelijkheid.includes(item)}
+                                          onChange={e => setNewKlant({...newKlant, Toegankelijkheid: e.target.checked ? [...newKlant.Toegankelijkheid, item] : newKlant.Toegankelijkheid.filter(v => v !== item)})}
+                                          className="accent-blue-500 w-3.5 h-3.5" />
+                                        {item}
+                                      </label>
+                                    ))}
+                                  </div>
+                                </div>
+
+                                <OnderhoudGroup title="Onderhoud binnen" fieldName="onderhoud_binnen_wz"
+                                  value={newKlant.OnderhoudBinnen} onChange={v => setNewKlant({...newKlant, OnderhoudBinnen: v})} />
+                                <OnderhoudGroup title="Onderhoud buiten" fieldName="onderhoud_buiten_wz"
+                                  value={newKlant.OnderhoudBuiten} onChange={v => setNewKlant({...newKlant, OnderhoudBuiten: v})} />
+
+                                {/* Parkeren / Voorzieningen / Eigendom */}
+                                <div className="border-t border-slate-100 pt-3 flex gap-8">
+                                  <div>
+                                    <p className="text-xs font-semibold text-slate-700 mb-2">Parkeren</p>
+                                    {['Garage','Parkeerplaats'].map(item => (
+                                      <label key={item} className="flex items-center gap-1.5 text-xs mb-1.5 cursor-pointer hover:text-blue-600">
+                                        <input type="checkbox" checked={newKlant.Parkeren.includes(item)}
+                                          onChange={e => setNewKlant({...newKlant, Parkeren: e.target.checked ? [...newKlant.Parkeren, item] : newKlant.Parkeren.filter(v => v !== item)})}
+                                          className="accent-blue-500 w-3.5 h-3.5" />
+                                        {item}
+                                      </label>
+                                    ))}
+                                  </div>
+                                  <div>
+                                    <p className="text-xs font-semibold text-slate-700 mb-2">Voorzieningen</p>
+                                    {['Lift','Berging','Zonnepanelen','Jacuzzi','Zwembad'].map(item => (
+                                      <label key={item} className="flex items-center gap-1.5 text-xs mb-1.5 cursor-pointer hover:text-blue-600">
+                                        <input type="checkbox" checked={newKlant.Voorzieningen.includes(item)}
+                                          onChange={e => setNewKlant({...newKlant, Voorzieningen: e.target.checked ? [...newKlant.Voorzieningen, item] : newKlant.Voorzieningen.filter(v => v !== item)})}
+                                          className="accent-blue-500 w-3.5 h-3.5" />
+                                        {item}
+                                      </label>
+                                    ))}
+                                  </div>
+                                  <div>
+                                    <p className="text-xs font-semibold text-slate-700 mb-2">Eigendom</p>
+                                    {['Geen erfpacht','Alleen erfpacht indien afgekocht'].map(item => (
+                                      <label key={item} className="flex items-center gap-1.5 text-xs mb-1.5 cursor-pointer hover:text-blue-600">
+                                        <input type="checkbox" checked={newKlant.Eigendom.includes(item)}
+                                          onChange={e => setNewKlant({...newKlant, Eigendom: e.target.checked ? [...newKlant.Eigendom, item] : newKlant.Eigendom.filter(v => v !== item)})}
+                                          className="accent-blue-500 w-3.5 h-3.5" />
+                                        {item}
+                                      </label>
+                                    ))}
+                                  </div>
+                                </div>
+
+                                {/* Bouwjaar */}
+                                <div className="border-t border-slate-100 pt-3">
+                                  <p className="text-xs font-semibold text-slate-700 mb-2">Bouwjaar</p>
+                                  <div className="flex items-center gap-3 mb-1.5">
+                                    <span className="text-xs text-slate-600 w-6">Van</span>
+                                    <input type="text" value={newKlant.BouwjaarVan} onChange={e => setNewKlant({...newKlant, BouwjaarVan: e.target.value})}
+                                      className="w-20 px-2 py-1 border border-slate-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-400 bg-slate-50" />
+                                  </div>
+                                  <div className="flex items-center gap-3">
+                                    <span className="text-xs text-slate-600 w-6">t/m</span>
+                                    <input type="text" value={newKlant.BouwjaarTm} onChange={e => setNewKlant({...newKlant, BouwjaarTm: e.target.value})}
+                                      className="w-20 px-2 py-1 border border-slate-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-400 bg-slate-50" />
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+
+                            <div className="mt-5 flex justify-center">
+                              <button type="button" onClick={() => setAddKlantStep(4)}
+                                className="px-10 py-1.5 bg-[#5b9bd5] hover:bg-[#4a8ac4] text-white text-sm font-medium rounded border border-[#3a7ab4] transition-colors">
+                                Volgende stap
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* ── Stap 4: Instellingen ── */}
+                      <div>
+                        <button type="button" onClick={() => setAddKlantStep(addKlantStep === 4 ? 0 : 4)}
+                          className={`w-full flex items-center gap-2 px-5 py-3 text-left text-sm font-semibold transition-colors
+                            ${addKlantStep === 4 ? 'bg-[#cfe2f3] text-[#1a5c8a]' : 'bg-[#e8f4fb] text-[#2d3e50] hover:bg-[#daeaf7]'}`}>
+                          <span className="text-xs">{addKlantStep === 4 ? '▾' : '▸'}</span>
+                          Stap 4. Instellingen
+                        </button>
+                        {addKlantStep === 4 && (
+                          <form onSubmit={handleAddKlant} className="px-8 py-5 bg-white">
+                            <div className="max-w-sm space-y-4">
+                              <div>
+                                <label className="block text-xs font-semibold text-slate-600 mb-1.5">E-mailadres klant</label>
+                                <input type="email" value={newKlant.Email}
+                                  onChange={e => setNewKlant({...newKlant, Email: e.target.value})}
+                                  className="w-full px-3 py-1.5 border border-slate-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-400"
+                                  placeholder="naam@voorbeeld.nl" />
+                              </div>
+                              <div>
+                                <label className="block text-xs font-semibold text-slate-600 mb-1.5">Notificatiefrequentie</label>
+                                <select value={newKlant.Notificatie} onChange={e => setNewKlant({...newKlant, Notificatie: e.target.value})}
+                                  className="w-full px-3 py-1.5 border border-slate-300 rounded text-sm bg-white focus:outline-none">
+                                  <option value="direct">Direct (zodra beschikbaar)</option>
+                                  <option value="dagelijks">Dagelijks overzicht</option>
+                                  <option value="wekelijks">Wekelijks overzicht</option>
+                                </select>
+                              </div>
+                              <div>
+                                <label className="block text-xs font-semibold text-slate-600 mb-1.5">Extra notities / bijzondere wensen</label>
+                                <textarea rows={3} value={newKlant.BijzondereKenmerken}
+                                  onChange={e => setNewKlant({...newKlant, BijzondereKenmerken: e.target.value})}
+                                  className="w-full px-3 py-1.5 border border-slate-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-400 resize-none"
+                                  placeholder="Extra wensen of opmerkingen..." />
+                              </div>
+                            </div>
+                            <div className="mt-5 flex justify-center gap-3">
+                              <button type="button"
+                                onClick={() => { setShowAddKlantModal(false); resetAddKlantForm(); }}
+                                className="px-6 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium rounded transition-colors">
+                                Annuleren
+                              </button>
+                              <button type="submit" disabled={submittingKlant}
+                                className="px-10 py-1.5 bg-[#5b9bd5] hover:bg-[#4a8ac4] disabled:opacity-50 text-white text-sm font-medium rounded border border-[#3a7ab4] transition-colors flex items-center gap-2">
+                                {submittingKlant ? <RefreshCw size={14} className="animate-spin" /> : <UserPlus size={14} />}
+                                Profiel Opslaan
+                              </button>
+                            </div>
+                          </form>
+                        )}
+                      </div>
+
+                    </div>{/* end scrollable body */}
                   </motion.div>
                 </div>
               )}
