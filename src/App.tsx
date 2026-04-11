@@ -1034,10 +1034,7 @@ export default function App() {
     };
     
     fetchData();
-    // Fallback polling elke 60 seconden (iets minder intensief voor n8n)
-    const interval = setInterval(fetchData, 60000);
 
-    return () => clearInterval(interval);
   }, []);
 
   const [selectedViewing, setSelectedViewing] = useState<{
