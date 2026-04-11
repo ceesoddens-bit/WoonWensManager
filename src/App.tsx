@@ -224,39 +224,57 @@ function parseStructuredN8nMatches(sourceArray: any[], datum: string): any[] {
        }
     }
 
+    const noBijzonderheden = (item["bijzondere kenmerken klnt prof"] || '').toLowerCase().trim();
+    if (noBijzonderheden === 'geen' || noBijzonderheden === 'n.v.t.' || noBijzonderheden === 'nvt') {
+       isSpecialMatch = true;
+    }
+
     // STRICT SANITY CHECK: Ensure the number of green checks mathematically matches the percentage.
     // e.g., 75% means exactly 3 greens. 50% means exactly 2 greens.
-    const expectedGreens = Math.round((percentage / 100) * 4);
-    const checks = [
-      // We order them by "most likely to be the subjective mismatch" first, so if we HAVE to guess, we guess smart.
-      { name: 'special', get: () => isSpecialMatch, set: (v: boolean) => isSpecialMatch = v },
-      { name: 'type', get: () => isTypeMatch, set: (v: boolean) => isTypeMatch = v },
-      { name: 'region', get: () => isRegionMatch, set: (v: boolean) => isRegionMatch = v },
-      { name: 'budget', get: () => isBudgetMatch, set: (v: boolean) => isBudgetMatch = v }
-    ];
+    // We only run this fallback if N8N did NOT provide the opbouw string.
+    if (!opbouw) {
+       const expectedGreens = Math.round((percentage / 100) * 4);
+       const checks = [
+         // We order them by "most likely to be the subjective mismatch" first, so if we HAVE to guess, we guess smart.
+         { name: 'special', get: () => isSpecialMatch, set: (v: boolean) => isSpecialMatch = v },
+         { name: 'type', get: () => isTypeMatch, set: (v: boolean) => isTypeMatch = v },
+         { name: 'region', get: () => isRegionMatch, set: (v: boolean) => isRegionMatch = v },
+         { name: 'budget', get: () => isBudgetMatch, set: (v: boolean) => isBudgetMatch = v }
+       ];
 
-    let currentGreens = checks.filter(c => c.get()).length;
+       let currentGreens = checks.filter(c => c.get()).length;
 
-    // If we have TOO MANY greens for the percentage (e.g. 4 greens on 75%), force the most subjective ones to red.
-    while (currentGreens > expectedGreens) {
-      const activeCheck = checks.find(c => c.get());
-      if (activeCheck) {
-         activeCheck.set(false);
-         currentGreens--;
-      } else {
-         break;
-      }
-    }
-    
-    // If we have TOO FEW greens (e.g. 2 greens on 75%), force some to green.
-    while (currentGreens < expectedGreens) {
-      const inactiveCheck = [...checks].reverse().find(c => !c.get());
-      if (inactiveCheck) {
-         inactiveCheck.set(true);
-         currentGreens++;
-      } else {
-         break;
-      }
+       // If we have TOO MANY greens for the percentage (e.g. 4 greens on 75%), force the most subjective ones to red.
+       while (currentGreens > expectedGreens) {
+         const activeCheck = checks.find(c => c.get());
+         if (activeCheck) {
+            // Only set to false if it's not the forced 'geen' bijzonderheden
+            if (activeCheck.name === 'special' && (noBijzonderheden === 'geen' || noBijzonderheden === 'n.v.t.' || noBijzonderheden === 'nvt')) {
+               // Skip forcing this to red. Find the next one.
+               const nextCheck = checks.find(c => c.get() && c.name !== 'special');
+               if (nextCheck) {
+                  nextCheck.set(false);
+                  currentGreens--;
+               } else break;
+            } else {
+               activeCheck.set(false);
+               currentGreens--;
+            }
+         } else {
+            break;
+         }
+       }
+
+       // If we have TOO FEW greens (e.g. 2 greens on 75%), force some to green.
+       while (currentGreens < expectedGreens) {
+         const inactiveCheck = [...checks].reverse().find(c => !c.get());
+         if (inactiveCheck) {
+            inactiveCheck.set(true);
+            currentGreens++;
+         } else {
+            break;
+         }
+       }
     }
 
     return {
