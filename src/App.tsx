@@ -23,11 +23,12 @@ import {
   RefreshCw,
   UserPlus,
   ClipboardList,
-  Trash2
+  Trash2,
+  Mail
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
-type View = 'nieuwste' | 'matches' | 'manager' | 'klanten';
+type View = 'nieuwste' | 'matches' | 'manager' | 'klanten' | 'email-scraper';
 
 // Types for our data
 interface Viewing {
@@ -1522,6 +1523,7 @@ export default function App() {
         <SidebarIcon view="matches" icon={MatchIcon} label="Matches" />
         <SidebarIcon view="manager" icon={ClipboardList} label="Manager" />
         <SidebarIcon view="klanten" icon={UserPlus} label="Klanten Profielen" />
+        <SidebarIcon view="email-scraper" icon={Mail} label="E-mail Scraper" />
       </aside>
 
       {/* Main Content */}
@@ -2056,6 +2058,29 @@ export default function App() {
                    onDeleteKlant={handleDeleteKlant}
                    deletingRow={deletingKlantRow}
                 />
+              ) : activeView === 'email-scraper' ? (
+                <motion.div
+                  key="email-scraper"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="mt-8"
+                >
+                  <div className="bg-white rounded-3xl shadow-xl p-12 border border-slate-100 flex flex-col items-center text-center">
+                    <div className="w-20 h-20 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 mb-6">
+                      <Mail size={40} strokeWidth={1.5} />
+                    </div>
+                    <h2 className="text-3xl font-bold text-[#141e2b] mb-4">E-mail Scraper</h2>
+                    <p className="text-slate-500 max-w-md leading-relaxed text-lg">
+                      Deze module is momenteel in ontwikkeling. Binnenkort kun je hier e-mails importeren en automatisch verwerken tot klantprofielen.
+                    </p>
+                    <div className="mt-8 flex gap-4">
+                      <div className="px-4 py-2 bg-slate-50 rounded-xl border border-slate-100 text-xs font-bold text-slate-400 uppercase tracking-widest">
+                        Status: Bèta
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
               ) : null}
             </AnimatePresence>
             
