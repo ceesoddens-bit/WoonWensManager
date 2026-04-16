@@ -1079,7 +1079,70 @@ function OnderhoudGroup({ title, fieldName, value, onChange }: {
     </div>
   );
 }
+// ── Map Selector Component ────────────────────────────────────────────────
+const MapSelector = ({ selectedLocations, onSelect }: { selectedLocations: string[], onSelect: (loc: string) => void }) => {
+  const mapRef = React.useRef<any>(null);
+  const containerRef = React.useRef<HTMLDivElement>(null);
+  const markersRef = React.useRef<any[]>([]);
+
+  React.useEffect(() => {
+    if (!containerRef.current) return;
+    const L = (window as any).L;
+    if (!L) return;
+
+    // Initialize map
+    mapRef.current = L.map(containerRef.current, {
+      center: [51.2, 5.9],
+      zoom: 9,
+      scrollWheelZoom: true
+    });
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '© OpenStreetMap'
+    }).addTo(mapRef.current);
+
+    // Click handler
+    mapRef.current.on('click', async (e: any) => {
+      const { lat, lng } = e.latlng;
+      const marker = L.marker([lat, lng]).addTo(mapRef.current);
+      marker.bindPopup("Zoeken...").openPopup();
+
+      try {
+        // Reverse geocoding via Nominatim
+        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=12&addressdetails=1`);
+        const data = await res.json();
+        
+        // Pick most relevant name (city, town, village, or suburb)
+        const locationName = data.address.city || data.address.town || data.address.village || data.address.suburb || data.address.neighbourhood || data.display_name.split(',')[0];
+        
+        if (locationName) {
+           marker.bindPopup(`<b class="text-blue-600">${locationName}</b> toegevoegd`).openPopup();
+           onSelect(locationName);
+           setTimeout(() => marker.remove(), 2000); // Remove marker after info shown
+        } else {
+           marker.bindPopup("Locatie niet gevonden").openPopup();
+           setTimeout(() => marker.remove(), 1000);
+        }
+      } catch (err) {
+        console.error('Reverse Geocode Error:', err);
+        marker.bindPopup("Fout bij opzoeken").openPopup();
+        setTimeout(() => marker.remove(), 1000);
+      }
+    });
+
+    return () => {
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+      }
+    };
+  }, []);
+
+  return <div ref={containerRef} className="w-full h-full min-h-[360px] rounded border border-slate-300" />;
+};
 // ───────────────────────────────────────────────────────────────────────────
+
 
 export default function App() {
   const [activeView, setActiveView] = useState<View>(() => {
@@ -1982,12 +2045,18 @@ export default function App() {
                                 )}
                               </div>
                               {/* Right: map */}
-                              <div className="flex-1" style={{ minHeight: 360 }}>
-                                <iframe width="100%" height="100%"
-                                  style={{ border: '1px solid #ccc', minHeight: 360 }}
-                                  src="https://www.openstreetmap.org/export/embed.html?bbox=5.5%2C50.7%2C6.5%2C51.7&layer=mapnik"
-                                  title="Kaart regio" />
+                              <div className="flex-1 overflow-hidden" style={{ minHeight: 360 }}>
+                                <MapSelector 
+                                  selectedLocations={newKlant.GeselecteerdeLocaties}
+                                  onSelect={(loc) => {
+                                    if (!newKlant.GeselecteerdeLocaties.includes(loc)) {
+                                      setNewKlant({ ...newKlant, GeselecteerdeLocaties: [...newKlant.GeselecteerdeLocaties, loc] });
+                                      setLocatieError(false);
+                                    }
+                                  }}
+                                />
                               </div>
+
                             </div>
                             {locatieError && (
                               <div className="mt-3 border-l-4 border-red-500 bg-red-50 px-3 py-2">
