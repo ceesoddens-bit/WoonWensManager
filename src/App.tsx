@@ -144,32 +144,43 @@ function parseStructuredN8nMatches(sourceArray: any[], datum: string): any[] {
     let isBudgetMatch = (item["prijs binnen budget"] || '').toLowerCase().includes("ja");
     let isSpecialMatch = true;
 
-    // Verbeterde fallback voor Woningtype als N8N de opbouw nog niet meestuurt
-    let isTypeMatch = true;
-    const clientType = (item["woning type klnt prof"] || '').toLowerCase();
-    const houseType = (item["woning type"] || '').toLowerCase();
-    if (clientType && houseType && clientType !== 'alle woningtypes' && !clientType.includes('n.v.t.')) {
-       const clientWords = clientType.split(/[, \/]+/).filter((w: string) => w.length > 3);
-       let matched = false;
-       const synonyms: Record<string, string[]> = {
-          'tweekapper': ['twee-onder-een', '2-onder-1', 'halfvrijstaand', 'geschakeld'],
-          'halfvrijstaand': ['2-onder-1', 'tweekapper', 'twee-onder-een', 'geschakeld'],
-          'bungalow': ['levensloopbestendig', 'gelijkvloers'],
-          'levensloopbestendig': ['bungalow', 'gelijkvloers', 'semi-bungalow'],
-          'vrijstaand': ['vrijstaande'],
-          'eengezinswoning': ['tussenwoning', 'hoekwoning', 'rijtjeshuis']
-       };
-       for (const cw of clientWords) {
-          if (houseType.includes(cw)) { matched = true; break; }
-          if (synonyms[cw]) {
-             for (const syn of synonyms[cw]) {
-                if (houseType.includes(syn)) { matched = true; break; }
-             }
+    // --- Verbeterde Woningtype & Woningsoort Check ---
+    const checkSpecificMatch = (clientVal: string, houseVal: string) => {
+      const c = (clientVal || '').toLowerCase().trim();
+      const h = (houseVal || '').toLowerCase().trim();
+      
+      if (!c || c === 'alle woningtypes' || c.includes('n.v.t.') || c === 'nvt' || c === 'geen') return true;
+      if (!h || h === 'n.v.t.' || h === 'nvt') return false;
+
+      const clientWords = c.split(/[, \/]+/).filter((w: string) => w.length > 3);
+      const synonyms: Record<string, string[]> = {
+        'tweekapper': ['twee-onder-een', '2-onder-1', 'halfvrijstaand', 'geschakeld'],
+        'halfvrijstaand': ['2-onder-1', 'tweekapper', 'twee-onder-een', 'geschakeld'],
+        'bungalow': ['levensloopbestendig', 'gelijkvloers'],
+        'levensloopbestendig': ['bungalow', 'gelijkvloers', 'semi-bungalow'],
+        'vrijstaand': ['vrijstaande'],
+        'eengezinswoning': ['tussenwoning', 'hoekwoning', 'rijtjeshuis']
+      };
+
+      for (const cw of clientWords) {
+        if (h.includes(cw)) return true;
+        if (synonyms[cw]) {
+          for (const syn of synonyms[cw]) {
+            if (h.includes(syn)) return true;
           }
-          if (matched) break;
-       }
-       isTypeMatch = matched;
-    }
+        }
+      }
+      return false;
+    };
+
+    const clientType = item["woning type klnt prof"];
+    const houseType = item["woning type adres"] || item["woning type"]; // fallback naar oude naam
+    const clientSoort = item["woning soort klnt prof"];
+    const houseSoort = item["woning soort adres"];
+
+    let isTypeMatch = checkSpecificMatch(clientType, houseType);
+    let isSoortMatch = checkSpecificMatch(clientSoort, houseSoort);
+
 
     // Use match_percentage_opbouw if provided by N8N
     const opbouw = item["match_percentage_opbouw"];
@@ -184,14 +195,20 @@ function parseStructuredN8nMatches(sourceArray: any[], datum: string): any[] {
     if (opbouw && typeof opbouw === 'object') {
       isRegionMatch = checkOpbouw(opbouw.locatie, isRegionMatch);
       isBudgetMatch = checkOpbouw(opbouw.prijs, isBudgetMatch);
-      isTypeMatch = checkOpbouw(opbouw["woning type"] || opbouw.woningtype || opbouw.woning_type, isTypeMatch);
+      const groupTypeMatch = checkOpbouw(opbouw["woning type"] || opbouw.woningtype || opbouw.woning_type, isTypeMatch && isSoortMatch);
+      // Als de opbouw zegt dat het een match is, forceren we beide naar true als ze individueel ook ok lijken, 
+      // of we volgen de opbouw strikt voor beide.
+      isTypeMatch = groupTypeMatch;
+      isSoortMatch = groupTypeMatch;
       isSpecialMatch = checkOpbouw(opbouw.bijzonderheden, isSpecialMatch);
     } else if (typeof opbouw === 'string') {
        try {
          const parsedOpbouw = JSON.parse(opbouw);
          isRegionMatch = checkOpbouw(parsedOpbouw.locatie, isRegionMatch);
          isBudgetMatch = checkOpbouw(parsedOpbouw.prijs, isBudgetMatch);
-         isTypeMatch = checkOpbouw(parsedOpbouw["woning type"] || parsedOpbouw.woningtype || parsedOpbouw.woning_type, isTypeMatch);
+         const groupTypeMatch = checkOpbouw(parsedOpbouw["woning type"] || parsedOpbouw.woningtype || parsedOpbouw.woning_type, isTypeMatch && isSoortMatch);
+         isTypeMatch = groupTypeMatch;
+         isSoortMatch = groupTypeMatch;
          isSpecialMatch = checkOpbouw(parsedOpbouw.bijzonderheden, isSpecialMatch);
        } catch (e) {
           // If it is a comma-separated string like "locatie: 25%, prijs: 0%, woning type: 0%, bijzonderheden: 25%"
@@ -217,7 +234,10 @@ function parseStructuredN8nMatches(sourceArray: any[], datum: string): any[] {
           if (rBudget !== null) isBudgetMatch = rBudget;
 
           const rType = extractPct(['woning type', 'woningtype', 'type']);
-          if (rType !== null) isTypeMatch = rType;
+          if (rType !== null) {
+            isTypeMatch = rType;
+            isSoortMatch = rType;
+          }
 
           const rSpecial = extractPct(['bijzonderheden', 'kenmerken', 'eisen']);
           if (rSpecial !== null) isSpecialMatch = rSpecial;
@@ -233,14 +253,16 @@ function parseStructuredN8nMatches(sourceArray: any[], datum: string): any[] {
     // e.g., 75% means exactly 3 greens. 50% means exactly 2 greens.
     // We only run this fallback if N8N did NOT provide the opbouw string.
     if (!opbouw) {
-       const expectedGreens = Math.round((percentage / 100) * 4);
+       const expectedGreens = Math.round((percentage / 100) * 5);
        const checks = [
          // We order them by "most likely to be the subjective mismatch" first, so if we HAVE to guess, we guess smart.
          { name: 'special', get: () => isSpecialMatch, set: (v: boolean) => isSpecialMatch = v },
+         { name: 'soort', get: () => isSoortMatch, set: (v: boolean) => isSoortMatch = v },
          { name: 'type', get: () => isTypeMatch, set: (v: boolean) => isTypeMatch = v },
          { name: 'region', get: () => isRegionMatch, set: (v: boolean) => isRegionMatch = v },
          { name: 'budget', get: () => isBudgetMatch, set: (v: boolean) => isBudgetMatch = v }
        ];
+
 
        let currentGreens = checks.filter(c => c.get()).length;
 
@@ -290,9 +312,11 @@ function parseStructuredN8nMatches(sourceArray: any[], datum: string): any[] {
       matchCriteria: [
         { label: "📍 Regio", client: item["zk geb. klant"] || "Volgens profiel", house: `${item["afstand zoekgebied"] || 'ja'}`, match: isRegionMatch },
         { label: "💰 Budget", client: item["budget range"] || "Volgens profiel", house: `${item["prijs"] || 'n.v.t.'} · ${item["prijs binnen budget"] || ''}`, match: isBudgetMatch },
-        { label: "🏠 Woningtype", client: item["woning type klnt prof"] || "Volgens profiel", house: item["woning type"] || "n.v.t.", match: isTypeMatch },
+        { label: "🏠 Woningtype", client: item["woning type klnt prof"] || "n.v.t.", house: item["woning type adres"] || item["woning type"] || "n.v.t.", match: isTypeMatch },
+        { label: "🏘️ Woningsoort", client: item["woning soort klnt prof"] || "n.v.t.", house: item["woning soort adres"] || "n.v.t.", match: isSoortMatch },
         { label: "✨ Bijzonderheden", client: item["bijzondere kenmerken klnt prof"] || "Volgens profiel", house: item["bijzondere kenmerken"] || "n.v.t.", match: isSpecialMatch }
       ],
+
       datum: datum
     };
   });
