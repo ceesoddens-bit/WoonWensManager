@@ -22,7 +22,8 @@ import {
   UserCheck,
   RefreshCw,
   UserPlus,
-  ClipboardList
+  ClipboardList,
+  Trash2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -98,6 +99,8 @@ const N8N_SCANS_URL = 'https://woonwensmakelaar.app.n8n.cloud/webhook/d20bd156-8
 const N8N_MATCHES_URL = 'https://woonwensmakelaar.app.n8n.cloud/webhook/d20bd156-86c9-40ea-86aa-f92949d207e7match';
 const N8N_KLANTEN_URL = 'https://woonwensmakelaar.app.n8n.cloud/webhook/69dda1df-46e0-4fc4-bcb8-cade9d33f5a8';
 const N8N_ADD_KLANT_URL = 'https://woonwensmakelaar.app.n8n.cloud/webhook/e4488576-ecab-4b82-8196-b3922eba62de';
+const N8N_DELETE_KLANT_URL = 'https://woonwensmakelaar.app.n8n.cloud/webhook/8bf75a4c-2771-4d38-ad29-c5682e74bdfd';
+
 
 // --- Direct N8N Parsing Helpers ---
 
@@ -939,7 +942,21 @@ const MatchCard: React.FC<{ match: Match, klanten?: any[], scans?: any[] }> = ({
   );
 };
 
-const KlantenView = ({ klanten, onAddKlant, refreshing, onRefresh }: { klanten: any[], onAddKlant: () => void, refreshing: boolean, onRefresh: () => void }) => {
+const KlantenView = ({ 
+  klanten, 
+  onAddKlant, 
+  refreshing, 
+  onRefresh,
+  onDeleteKlant,
+  deletingRow 
+}: { 
+  klanten: any[], 
+  onAddKlant: () => void, 
+  refreshing: boolean, 
+  onRefresh: () => void,
+  onDeleteKlant: (row: number, name: string) => void,
+  deletingRow: number | null
+}) => {
   return (
     <motion.div
       key="klanten-overzicht"
@@ -951,7 +968,7 @@ const KlantenView = ({ klanten, onAddKlant, refreshing, onRefresh }: { klanten: 
       <div className="flex justify-between items-center bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
         <div>
           <h2 className="text-2xl font-bold flex items-center gap-3 text-[#2d3e50]">
-            <UserPlus className="text-[#e67e22]" size={30} />
+            <Users className="text-[#e67e22]" size={30} />
             Klanten Profielen
           </h2>
           <p className="text-slate-500 text-sm mt-1">Beheer actieve zoekprofielen via de Google Sheet verbinding.</p>
@@ -983,46 +1000,64 @@ const KlantenView = ({ klanten, onAddKlant, refreshing, onRefresh }: { klanten: 
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {klanten.map((klant, idx) => (
-            <div key={idx} className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
-              <div className="flex items-center gap-4 mb-4">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#e67e22] to-orange-400 flex items-center justify-center text-white font-bold text-lg shadow-sm">
-                  {klant.Naam ? klant.Naam.charAt(0).toUpperCase() : '?'}
+          {klanten.map((klant, idx) => {
+            const rowNo = klant.row_number || klant.rowNumber;
+            const isDeleting = deletingRow === rowNo;
+
+            return (
+              <div key={idx} className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition-shadow relative group">
+                {/* Delete Button */}
+                {rowNo && (
+                  <button
+                    onClick={() => onDeleteKlant(rowNo, klant.Naam)}
+                    disabled={isDeleting}
+                    className="absolute top-4 right-4 p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all opacity-0 group-hover:opacity-100 disabled:opacity-50"
+                    title="Profiel verwijderen"
+                  >
+                    {isDeleting ? <RefreshCw size={18} className="animate-spin text-red-500" /> : <Trash2 size={18} />}
+                  </button>
+                )}
+
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#e67e22] to-orange-400 flex items-center justify-center text-white font-bold text-lg shadow-sm">
+                    {klant.Naam ? klant.Naam.charAt(0).toUpperCase() : '?'}
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-[#2d3e50]">{klant.Naam || 'Naamloos Profiel'}</h3>
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold ring-1 ring-inset ring-emerald-600/20">
+                      Actief Profiel
+                    </span>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="text-xl font-bold text-[#2d3e50]">{klant.Naam || 'Naamloos Profiel'}</h3>
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold ring-1 ring-inset ring-emerald-600/20">
-                    Actief Profiel
-                  </span>
+                
+                <div className="space-y-4">
+                  <div>
+                    <dt className="text-xs font-bold text-slate-400 tracking-wider uppercase mb-1">Budget</dt>
+                    <dd className="font-semibold text-slate-700">{klant.Prijsklasse || 'Niet ingevuld'}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs font-bold text-slate-400 tracking-wider uppercase mb-1">Regio</dt>
+                    <dd className="text-sm font-medium text-slate-600 leading-relaxed">
+                      {klant.Regio || 'Niet ingevuld'}
+                      {klant['Bijzonderheden Regio'] && <span className="block text-slate-400 italic text-xs mt-0.5">{klant['Bijzonderheden Regio']}</span>}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs font-bold text-slate-400 tracking-wider uppercase mb-1">Woningtype & Wensen</dt>
+                    <dd className="text-sm font-medium text-slate-600 leading-relaxed">
+                      {klant.Woningtype || 'Geen woningtype'} • {klant['Bijzondere Kenmerken'] || 'Geen bijzondere kenmerken'}
+                    </dd>
+                  </div>
                 </div>
               </div>
-              
-              <div className="space-y-4">
-                <div>
-                  <dt className="text-xs font-bold text-slate-400 tracking-wider uppercase mb-1">Budget</dt>
-                  <dd className="font-semibold text-slate-700">{klant.Prijsklasse || 'Niet ingevuld'}</dd>
-                </div>
-                <div>
-                  <dt className="text-xs font-bold text-slate-400 tracking-wider uppercase mb-1">Regio</dt>
-                  <dd className="text-sm font-medium text-slate-600 leading-relaxed">
-                    {klant.Regio || 'Niet ingevuld'}
-                    {klant['Bijzonderheden Regio'] && <span className="block text-slate-400 italic text-xs mt-0.5">{klant['Bijzonderheden Regio']}</span>}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="text-xs font-bold text-slate-400 tracking-wider uppercase mb-1">Woningtype & Wensen</dt>
-                  <dd className="text-sm font-medium text-slate-600 leading-relaxed">
-                    {klant.Woningtype || 'Geen woningtype'} • {klant['Bijzondere Kenmerken'] || 'Geen bijzondere kenmerken'}
-                  </dd>
-                </div>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </motion.div>
   );
 };
+
 
 // ── Helper componenten voor specifieke wensen ──────────────────────────────
 function CheckboxGroup({ title, items, selected, onChange }: {
@@ -1306,6 +1341,7 @@ export default function App() {
   const [locatieError, setLocatieError] = useState(false);
   const [showSpecifiekeWensen, setShowSpecifiekeWensen] = useState(false);
   const [refreshingKlanten, setRefreshingKlanten] = useState(false);
+  const [deletingKlantRow, setDeletingKlantRow] = useState<number | null>(null);
   const [newKlant, setNewKlant] = useState({
     Naam: '', Regio: '', BijzonderhedenRegio: '',
     GeselecteerdeLocaties: [] as string[], GeselecteerdeCoords: {} as Record<string, [number, number]>, LocatieZoekterm: '', LocatieFilter: 'Alles',
@@ -1332,6 +1368,32 @@ export default function App() {
       alert('Fout bij ophalen klanten profielen van n8n.');
     } finally {
       setRefreshingKlanten(false);
+    }
+  };
+
+  const handleDeleteKlant = async (rowNumber: number, name: string) => {
+    if (!window.confirm(`Weet je zeker dat je het profiel van "${name}" wilt verwijderen?`)) return;
+    
+    setDeletingKlantRow(rowNumber);
+    try {
+      const res = await fetch(N8N_DELETE_KLANT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ row_number: rowNumber })
+      });
+      
+      if (res.ok) {
+        // Optimistic update
+        setKlantenLijst(prev => prev.filter(k => (k.row_number || k.rowNumber) !== rowNumber));
+        alert(`Profiel van ${name} succesvol verwijderd.`);
+      } else {
+        alert('Er is iets misgegaan bij het verwijderen in Google Sheets.');
+      }
+    } catch (err) {
+      console.error('Delete error:', err);
+      alert('Fout bij verbinding met de delete-webhook.');
+    } finally {
+      setDeletingKlantRow(null);
     }
   };
 
@@ -1991,6 +2053,8 @@ export default function App() {
                    refreshing={refreshingKlanten} 
                    onRefresh={refreshKlanten} 
                    onAddKlant={() => setShowAddKlantModal(true)} 
+                   onDeleteKlant={handleDeleteKlant}
+                   deletingRow={deletingKlantRow}
                 />
               ) : null}
             </AnimatePresence>
