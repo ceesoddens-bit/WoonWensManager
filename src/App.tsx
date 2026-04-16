@@ -1080,68 +1080,139 @@ function OnderhoudGroup({ title, fieldName, value, onChange }: {
   );
 }
 // ── Map Selector Component ────────────────────────────────────────────────
-const MapSelector = ({ selectedLocations, onSelect }: { selectedLocations: string[], onSelect: (loc: string) => void }) => {
+const MapSelector = ({ selectedLocations, selectedCoords, onSelect }: { 
+  selectedLocations: string[], 
+  selectedCoords: Record<string, [number, number]>,
+  onSelect: (loc: string, coords: [number, number]) => void 
+}) => {
   const mapRef = React.useRef<any>(null);
   const containerRef = React.useRef<HTMLDivElement>(null);
-  const markersRef = React.useRef<any[]>([]);
+  const markersGroupRef = React.useRef<any>(null);
+  const lastHoverTime = React.useRef<number>(0);
+  const hoverTooltipRef = React.useRef<any>(null);
 
+  // Initialization
   React.useEffect(() => {
     if (!containerRef.current) return;
     const L = (window as any).L;
     if (!L) return;
 
-    // Initialize map
     mapRef.current = L.map(containerRef.current, {
       center: [51.2, 5.9],
       zoom: 9,
-      scrollWheelZoom: true
+      scrollWheelZoom: true,
+      zoomControl: false // Custom placement later
     });
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-      attribution: '© OpenStreetMap'
+    L.control.zoom({ position: 'bottomright' }).addTo(mapRef.current);
+
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+      attribution: '©OpenStreetMap ©CartoDB'
     }).addTo(mapRef.current);
+
+    markersGroupRef.current = L.layerGroup().addTo(mapRef.current);
+    
+    // Create a hidden tooltip that we move around
+    hoverTooltipRef.current = L.tooltip({
+      sticky: true,
+      direction: 'top',
+      offset: [0, -10],
+      opacity: 0.9,
+      className: 'map-hover-tooltip'
+    });
+
+    // Hover handler with throttling (600ms)
+    const handleMouseMove = async (e: any) => {
+       const now = Date.now();
+       if (now - lastHoverTime.current < 600) return;
+       lastHoverTime.current = now;
+
+       const { lat, lng } = e.latlng;
+       try {
+         const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=12&addressdetails=1`);
+         const data = await res.json();
+         const name = data.address.city || data.address.town || data.address.village || data.address.suburb || data.address.neighbourhood || (data.display_name && data.display_name.split(',')[0]);
+         
+         if (name && mapRef.current) {
+            hoverTooltipRef.current
+              .setLatLng(e.latlng)
+              .setContent(`<div class="px-2 py-1 flex items-center gap-2"><span class="text-blue-500">📍</span> <span class="font-bold">${name}</span></div>`)
+              .addTo(mapRef.current);
+         }
+       } catch (err) {}
+    };
+
+    mapRef.current.on('mousemove', handleMouseMove);
 
     // Click handler
     mapRef.current.on('click', async (e: any) => {
       const { lat, lng } = e.latlng;
-      const marker = L.marker([lat, lng]).addTo(mapRef.current);
-      marker.bindPopup("Zoeken...").openPopup();
-
       try {
-        // Reverse geocoding via Nominatim
         const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=12&addressdetails=1`);
         const data = await res.json();
+        const name = data.address.city || data.address.town || data.address.village || data.address.suburb || data.address.neighbourhood || (data.display_name && data.display_name.split(',')[0]);
         
-        // Pick most relevant name (city, town, village, or suburb)
-        const locationName = data.address.city || data.address.town || data.address.village || data.address.suburb || data.address.neighbourhood || data.display_name.split(',')[0];
-        
-        if (locationName) {
-           marker.bindPopup(`<b class="text-blue-600">${locationName}</b> toegevoegd`).openPopup();
-           onSelect(locationName);
-           setTimeout(() => marker.remove(), 2000); // Remove marker after info shown
-        } else {
-           marker.bindPopup("Locatie niet gevonden").openPopup();
-           setTimeout(() => marker.remove(), 1000);
+        if (name) {
+          onSelect(name, [lat, lng]);
         }
-      } catch (err) {
-        console.error('Reverse Geocode Error:', err);
-        marker.bindPopup("Fout bij opzoeken").openPopup();
-        setTimeout(() => marker.remove(), 1000);
-      }
+      } catch (err) {}
     });
 
     return () => {
       if (mapRef.current) {
+        mapRef.current.off('mousemove', handleMouseMove);
         mapRef.current.remove();
         mapRef.current = null;
       }
     };
   }, []);
 
-  return <div ref={containerRef} className="w-full h-full min-h-[360px] rounded border border-slate-300" />;
+  // Update Markers
+  React.useEffect(() => {
+    if (!mapRef.current || !markersGroupRef.current) return;
+    const L = (window as any).L;
+    markersGroupRef.current.clearLayers();
+
+    selectedLocations.forEach(name => {
+      const coords = selectedCoords[name];
+      if (coords) {
+        const marker = L.marker(coords, {
+          icon: L.divIcon({
+            className: 'custom-div-icon',
+            html: `<div style="background-color: #3b82f6; width: 12px; height: 12px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>`,
+            iconSize: [12, 12],
+            iconAnchor: [6, 6]
+          })
+        }).addTo(markersGroupRef.current);
+        marker.bindTooltip(name, { permanent: false, direction: 'top' });
+      } else {
+        // Optionale Geocoding für Namen die per Text eingegeben wurden
+        // Hier für Performance weggelassen, oder man macht es einmalig
+      }
+    });
+  }, [selectedLocations, selectedCoords]);
+
+  return (
+    <>
+      <style>{`
+        .map-hover-tooltip {
+          background: white !important;
+          border: 1px solid #e2e8f0 !important;
+          border-radius: 8px !important;
+          box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1) !important;
+          color: #1e293b !important;
+          font-size: 12px !important;
+          padding: 0 !important;
+        }
+        .map-hover-tooltip::before { border-top-color: #e2e8f0 !important; }
+        .leaflet-container { cursor: crosshair !important; }
+      `}</style>
+      <div ref={containerRef} className="w-full h-full min-h-[360px] rounded border border-slate-300" />
+    </>
+  );
 };
 // ───────────────────────────────────────────────────────────────────────────
+
 
 
 export default function App() {
@@ -1237,7 +1308,7 @@ export default function App() {
   const [refreshingKlanten, setRefreshingKlanten] = useState(false);
   const [newKlant, setNewKlant] = useState({
     Naam: '', Regio: '', BijzonderhedenRegio: '',
-    GeselecteerdeLocaties: [] as string[], LocatieZoekterm: '', LocatieFilter: 'Alles',
+    GeselecteerdeLocaties: [] as string[], GeselecteerdeCoords: {} as Record<string, [number, number]>, LocatieZoekterm: '', LocatieFilter: 'Alles',
     Soort: 'koop', Prijsklasse: '', PrijsMax: '', Bouwvorm: 'beide',
     Objectsoort: 'woonhuis_appartement', Woonoppervlakte: '', Perceeloppervlakte: '',
     AantalKamers: '', AantalSlaapkamers: '', Bestemming: ['permanente_bewoning'] as string[],
@@ -1270,7 +1341,7 @@ export default function App() {
     setShowSpecifiekeWensen(false);
     setNewKlant({
       Naam: '', Regio: '', BijzonderhedenRegio: '',
-      GeselecteerdeLocaties: [], LocatieZoekterm: '', LocatieFilter: 'Alles',
+      GeselecteerdeLocaties: [], GeselecteerdeCoords: {}, LocatieZoekterm: '', LocatieFilter: 'Alles',
       Soort: 'koop', Prijsklasse: '', PrijsMax: '', Bouwvorm: 'beide',
       Objectsoort: 'woonhuis_appartement', Woonoppervlakte: '', Perceeloppervlakte: '',
       AantalKamers: '', AantalSlaapkamers: '', Bestemming: ['permanente_bewoning'],
@@ -2037,7 +2108,16 @@ export default function App() {
                                       <span key={i} className="flex items-center gap-1 bg-blue-50 text-blue-700 text-xs px-2 py-0.5 rounded border border-blue-200">
                                         {loc}
                                         <button type="button"
-                                          onClick={() => setNewKlant({ ...newKlant, GeselecteerdeLocaties: newKlant.GeselecteerdeLocaties.filter((_, idx) => idx !== i) })}
+                                          onClick={() => {
+                                            const removedLoc = newKlant.GeselecteerdeLocaties[i];
+                                            const newCoords = { ...newKlant.GeselecteerdeCoords };
+                                            delete newCoords[removedLoc];
+                                            setNewKlant({ 
+                                              ...newKlant, 
+                                              GeselecteerdeLocaties: newKlant.GeselecteerdeLocaties.filter((_, idx) => idx !== i),
+                                              GeselecteerdeCoords: newCoords
+                                            });
+                                          }}
                                           className="hover:text-red-600 leading-none ml-0.5">×</button>
                                       </span>
                                     ))}
@@ -2048,9 +2128,14 @@ export default function App() {
                               <div className="flex-1 overflow-hidden" style={{ minHeight: 360 }}>
                                 <MapSelector 
                                   selectedLocations={newKlant.GeselecteerdeLocaties}
-                                  onSelect={(loc) => {
+                                  selectedCoords={newKlant.GeselecteerdeCoords}
+                                  onSelect={(loc, coords) => {
                                     if (!newKlant.GeselecteerdeLocaties.includes(loc)) {
-                                      setNewKlant({ ...newKlant, GeselecteerdeLocaties: [...newKlant.GeselecteerdeLocaties, loc] });
+                                      setNewKlant({ 
+                                        ...newKlant, 
+                                        GeselecteerdeLocaties: [...newKlant.GeselecteerdeLocaties, loc],
+                                        GeselecteerdeCoords: { ...newKlant.GeselecteerdeCoords, [loc]: coords }
+                                      });
                                       setLocatieError(false);
                                     }
                                   }}
