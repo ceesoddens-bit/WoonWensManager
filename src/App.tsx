@@ -2173,13 +2173,16 @@ export default function App() {
                                         {loc}
                                         <button type="button"
                                           onClick={() => {
-                                            const removedLoc = newKlant.GeselecteerdeLocaties[i];
-                                            const newCoords = { ...newKlant.GeselecteerdeCoords };
-                                            delete newCoords[removedLoc];
-                                            setNewKlant({ 
-                                              ...newKlant, 
-                                              GeselecteerdeLocaties: newKlant.GeselecteerdeLocaties.filter((_, idx) => idx !== i),
-                                              GeselecteerdeCoords: newCoords
+                                            setNewKlant(prev => {
+                                              const removedLoc = prev.GeselecteerdeLocaties[i];
+                                              if (!removedLoc) return prev;
+                                              const newCoords = { ...prev.GeselecteerdeCoords };
+                                              delete newCoords[removedLoc];
+                                              return { 
+                                                ...prev, 
+                                                GeselecteerdeLocaties: prev.GeselecteerdeLocaties.filter((_, idx) => idx !== i),
+                                                GeselecteerdeCoords: newCoords
+                                              };
                                             });
                                           }}
                                           className="hover:text-red-600 leading-none ml-0.5">×</button>
@@ -2194,14 +2197,18 @@ export default function App() {
                                   selectedLocations={newKlant.GeselecteerdeLocaties}
                                   selectedCoords={newKlant.GeselecteerdeCoords}
                                   onSelect={(loc, coords) => {
-                                    if (!newKlant.GeselecteerdeLocaties.includes(loc)) {
-                                      setNewKlant({ 
-                                        ...newKlant, 
-                                        GeselecteerdeLocaties: [...newKlant.GeselecteerdeLocaties, loc],
-                                        GeselecteerdeCoords: { ...newKlant.GeselecteerdeCoords, [loc]: coords }
-                                      });
-                                      setLocatieError(false);
-                                    }
+                                    setNewKlant(prev => {
+                                      const hasLoc = prev.GeselecteerdeLocaties.includes(loc);
+                                      const hasCoords = !!prev.GeselecteerdeCoords[loc];
+                                      if (hasLoc && hasCoords && prev.GeselecteerdeCoords[loc][0] === coords[0]) return prev;
+
+                                      return { 
+                                        ...prev, 
+                                        GeselecteerdeLocaties: hasLoc ? prev.GeselecteerdeLocaties : [...prev.GeselecteerdeLocaties, loc],
+                                        GeselecteerdeCoords: { ...prev.GeselecteerdeCoords, [loc]: coords }
+                                      };
+                                    });
+                                    setLocatieError(false);
                                   }}
                                 />
                               </div>
@@ -2214,10 +2221,10 @@ export default function App() {
                             )}
                             <div className="mt-5 flex justify-center">
                               <button type="button" onClick={() => {
-                                if (newKlant.GeselecteerdeLocaties.length === 0) { setLocatieError(true); return; }
-                                setLocatieError(false);
-                                setNewKlant({ ...newKlant, Regio: newKlant.GeselecteerdeLocaties.join(', ') });
-                                setAddKlantStep(3);
+                               if (newKlant.GeselecteerdeLocaties.length === 0) { setLocatieError(true); return; }
+                               setLocatieError(false);
+                               setNewKlant(prev => ({ ...prev, Regio: prev.GeselecteerdeLocaties.join(', ') }));
+                               setAddKlantStep(3);
                               }} className="px-10 py-1.5 bg-[#5b9bd5] hover:bg-[#4a8ac4] text-white text-sm font-medium rounded border border-[#3a7ab4] transition-colors">
                                 Volgende stap
                               </button>
