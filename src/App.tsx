@@ -732,7 +732,9 @@ const MatchCard: React.FC<{ match: Match, klanten?: any[], scans?: any[] }> = ({
   };
 
   const openKlantMessage = () => {
-    const message = `Beste ${match.clientName},\n\nIk heb een interessante woning voor u gevonden: ${match.address}.\n\nDeze woning past goed bij uw zoekprofiel. Graag zou ik een bezichtiging voor u willen inplannen. Laat mij weten wanneer het u uitkomt.\n\nMet vriendelijke groet,\nRenaldo`;
+    const houseLink = match.link || matchHouse?.link;
+    const linkPart = houseLink ? `\n\nBekijk de woning hier: ${houseLink}` : '';
+    const message = `Beste ${match.clientName},\n\nIk heb een interessante woning voor u gevonden: ${match.address}.${linkPart}\n\nDeze woning past goed bij uw zoekprofiel. Graag zou ik een bezichtiging voor u willen inplannen. Laat mij weten wanneer het u uitkomt.\n\nMet vriendelijke groet,\nRenaldo`;
     setMessageModal({ title: `Bericht voor ${match.clientName}`, message, type: 'klant' });
     setEditedMessage(message);
     setCopied(false);
