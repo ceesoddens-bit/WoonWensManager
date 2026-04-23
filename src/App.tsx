@@ -2024,13 +2024,12 @@ export default function App() {
                       regionOrder.map(region => (
                         groupedScans[region] && groupedScans[region].length > 0 && (
                           <div key={region} className="space-y-6">
-                            <div className="flex items-center gap-4">
-                              <h3 className="text-2xl font-bold text-[#2d3e50] capitalize">
+                            <div className="flex items-baseline gap-4 mb-8">
+                              <h3 className="text-6xl font-black text-[#2d3e50] capitalize tracking-tighter">
                                 {region}
                               </h3>
-                              <div className="h-px flex-1 bg-slate-200"></div>
-                              <span className="bg-slate-100 text-slate-500 px-3 py-1 rounded-full text-xs font-bold">
-                                {groupedScans[region].length} woningen
+                              <span className="text-2xl font-bold text-slate-300">
+                                — {groupedScans[region].length} woningen
                               </span>
                             </div>
                             <div className="grid grid-cols-1 gap-8">
