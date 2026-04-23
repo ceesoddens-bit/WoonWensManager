@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Home,
   Users,
@@ -101,6 +101,27 @@ const N8N_MATCHES_URL = 'https://woonwensmakelaar.app.n8n.cloud/webhook/d20bd156
 const N8N_KLANTEN_URL = 'https://woonwensmakelaar.app.n8n.cloud/webhook/69dda1df-46e0-4fc4-bcb8-cade9d33f5a8';
 const N8N_ADD_KLANT_URL = 'https://woonwensmakelaar.app.n8n.cloud/webhook/e4488576-ecab-4b82-8196-b3922eba62de';
 const N8N_DELETE_KLANT_URL = 'https://woonwensmakelaar.app.n8n.cloud/webhook/8bf75a4c-2771-4d38-ad29-c5682e74bdfd';
+
+const getRegion = (plaats: string): string => {
+  if (!plaats) return 'overige';
+  const p = plaats.toLowerCase();
+  
+  if (p.includes('maastricht')) return 'Maastricht';
+  
+  const heuvelland = ['gulpen', 'wittem', 'vaals', 'eijsden', 'margraten', 'meerssen', 'valkenburg', 'bemelen', 'cadier', 'mheer', 'noorbeek', 'slenaken', 'banholt', 'reijmerstok', 'terlinden', 'eys', 'wylre', 'nijs', 'geulle', 'bunde', 'ulestraten', 'berg', 'terblijt', 'vilt', 'sibbe', 'ijzeren', 'scheulder', 'wijlre'];
+  if (heuvelland.some(city => p.includes(city))) return 'heuvelland';
+  
+  const parkstad = ['heerlen', 'kerkrade', 'landgraaf', 'brunssum', 'simpelveld', 'voerendaal', 'nuth', 'schinnen', 'onderbanken', 'beekdaelen', 'hulsberg', 'schimmert', 'wynandsrade', 'hoensbroek', 'eygelshoven', 'nieuwenhagen', 'uubachsberg', 'bocholtz'];
+  if (parkstad.some(city => p.includes(city))) return 'parkstad';
+  
+  const westelijkeMijnstreek = ['sittard', 'geleen', 'beek', 'stein', 'elsloo', 'spaubeek', 'born', 'munstergeleen', 'puth', 'sweikhuizen', 'urmond', 'berg aan de maas', 'neerbeek', 'genhout', 'groot genhout'];
+  if (westelijkeMijnstreek.some(city => p.includes(city))) return 'westelijke mijnstreek';
+  
+  const echtRoermond = ['echt', 'susteren', 'roermond', 'roerdalen', 'maasgouw', 'leudal', 'itternoorbeek', 'wessem', 'heel', 'thorn', 'linne', 'herten', 'swalmen', 'montfort', 'sint odilienberg', 'vlodrop', 'herkenbosch', 'posterholt', 'melick', 'vlodrop', 'sint joost', 'koningsbosch', 'mariahop', 'peij', 'nieuwstadt'];
+  if (echtRoermond.some(city => p.includes(city))) return 'Echt Roermond';
+  
+  return 'overige';
+};
 
 
 // --- Direct N8N Parsing Helpers ---
@@ -1260,6 +1281,18 @@ export default function App() {
   const [matches, setMatches] = useState<any[]>([]);
   const [klantenLijst, setKlantenLijst] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const groupedScans = useMemo(() => {
+    const grouped = houseScans.reduce((acc, scan) => {
+      const region = getRegion(scan.Plaats || '');
+      if (!acc[region]) acc[region] = [];
+      acc[region].push(scan);
+      return acc;
+    }, {} as Record<string, HouseScan[]>);
+    return grouped;
+  }, [houseScans]);
+
+  const regionOrder = ['Maastricht', 'heuvelland', 'parkstad', 'westelijke mijnstreek', 'Echt Roermond', 'overige'];
   
   useEffect(() => {
     localStorage.setItem('woonwensActiveView', activeView);
@@ -1982,14 +2015,31 @@ export default function App() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 gap-8 pb-12">
+                  <div className="space-y-12 pb-12">
                     {loading ? (
                       <div className="flex justify-center p-20">
                         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
                       </div>
                     ) : houseScans.length > 0 ? (
-                      houseScans.map((scan) => (
-                        <HouseScanCard key={`${scan.ID}-${scan.adres}`} scan={scan} matches={matches} />
+                      regionOrder.map(region => (
+                        groupedScans[region] && groupedScans[region].length > 0 && (
+                          <div key={region} className="space-y-6">
+                            <div className="flex items-center gap-4">
+                              <h3 className="text-2xl font-bold text-[#2d3e50] capitalize">
+                                {region}
+                              </h3>
+                              <div className="h-px flex-1 bg-slate-200"></div>
+                              <span className="bg-slate-100 text-slate-500 px-3 py-1 rounded-full text-xs font-bold">
+                                {groupedScans[region].length} woningen
+                              </span>
+                            </div>
+                            <div className="grid grid-cols-1 gap-8">
+                              {groupedScans[region].map((scan) => (
+                                <HouseScanCard key={`${scan.ID}-${scan.adres}`} scan={scan} matches={matches} />
+                              ))}
+                            </div>
+                          </div>
+                        )
                       ))
                     ) : (
                       <div className="text-center p-20 text-slate-400 font-medium">
