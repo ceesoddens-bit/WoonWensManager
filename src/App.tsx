@@ -24,7 +24,8 @@ import {
   UserPlus,
   ClipboardList,
   Trash2,
-  Mail
+  Mail,
+  Pencil
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -101,6 +102,7 @@ const N8N_MATCHES_URL = 'https://woonwensmakelaar.app.n8n.cloud/webhook/d20bd156
 const N8N_KLANTEN_URL = 'https://woonwensmakelaar.app.n8n.cloud/webhook/69dda1df-46e0-4fc4-bcb8-cade9d33f5a8';
 const N8N_ADD_KLANT_URL = 'https://woonwensmakelaar.app.n8n.cloud/webhook/e4488576-ecab-4b82-8196-b3922eba62de';
 const N8N_DELETE_KLANT_URL = 'https://woonwensmakelaar.app.n8n.cloud/webhook/8bf75a4c-2771-4d38-ad29-c5682e74bdfd';
+const N8N_UPDATE_KLANT_URL = 'https://woonwensmakelaar.app.n8n.cloud/webhook/05d8cc66-ac17-4118-b160-c1a845116743';
 
 const getRegion = (plaats: string): string => {
   if (!plaats) return 'overige';
@@ -972,6 +974,7 @@ const KlantenView = ({
   refreshing, 
   onRefresh,
   onDeleteKlant,
+  onEditKlant,
   deletingRow 
 }: { 
   klanten: any[], 
@@ -979,6 +982,7 @@ const KlantenView = ({
   refreshing: boolean, 
   onRefresh: () => void,
   onDeleteKlant: (row: number, name: string) => void,
+  onEditKlant: (klant: any) => void,
   deletingRow: number | null
 }) => {
   return (
@@ -1031,16 +1035,25 @@ const KlantenView = ({
             return (
               <div key={idx} className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition-shadow relative group">
                 {/* Delete Button */}
-                {rowNo && (
-                  <button
-                    onClick={() => onDeleteKlant(rowNo, klant.Naam)}
-                    disabled={isDeleting}
-                    className="absolute top-4 right-4 p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all opacity-0 group-hover:opacity-100 disabled:opacity-50"
-                    title="Profiel verwijderen"
-                  >
-                    {isDeleting ? <RefreshCw size={18} className="animate-spin text-red-500" /> : <Trash2 size={18} />}
-                  </button>
-                )}
+                  <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-all">
+                    <button
+                      onClick={() => onEditKlant(klant)}
+                      className="p-2 text-slate-300 hover:text-blue-500 hover:bg-blue-50 rounded-xl transition-all"
+                      title="Profiel bewerken"
+                    >
+                      <Pencil size={18} />
+                    </button>
+                    {rowNo && (
+                      <button
+                        onClick={() => onDeleteKlant(rowNo, klant.Naam)}
+                        disabled={isDeleting}
+                        className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all disabled:opacity-50"
+                        title="Profiel verwijderen"
+                      >
+                        {isDeleting ? <RefreshCw size={18} className="animate-spin text-red-500" /> : <Trash2 size={18} />}
+                      </button>
+                    )}
+                  </div>
 
                 <div className="flex items-center gap-4 mb-4">
                   <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#e67e22] to-orange-400 flex items-center justify-center text-white font-bold text-lg shadow-sm">
@@ -1393,6 +1406,7 @@ export default function App() {
     Email: '', Notificatie: 'direct', BijzondereKenmerken: '', Woningtype: '',
   });
   const [submittingKlant, setSubmittingKlant] = useState(false);
+  const [editingKlantRow, setEditingKlantRow] = useState<number | null>(null);
 
   const refreshKlanten = async () => {
     setRefreshingKlanten(true);
@@ -1490,15 +1504,28 @@ export default function App() {
         Email: newKlant.Email,
         Notificatie: newKlant.Notificatie,
       };
-      const res = await fetch(N8N_ADD_KLANT_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
+
+      let res;
+      if (editingKlantRow) {
+        // Gebruik de nieuwe update-webhook die het rijnummer meeneemt
+        res = await fetch(N8N_UPDATE_KLANT_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...payload, row_number: editingKlantRow })
+        });
+      } else {
+        // Gebruik de bestaande add-webhook voor nieuwe profielen
+        res = await fetch(N8N_ADD_KLANT_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+      }
       if (res.ok) {
-        alert('Klant succesvol toegestuurd naar N8N!');
+        alert(editingKlantRow ? 'Profiel succesvol bijgewerkt!' : 'Klant succesvol toegestuurd naar N8N!');
         setShowAddKlantModal(false);
         resetAddKlantForm();
+        setEditingKlantRow(null);
         refreshKlanten();
       } else {
         alert('Er is iets misgegaan bij het versturen naar N8N.');
@@ -1508,6 +1535,48 @@ export default function App() {
     } finally {
       setSubmittingKlant(false);
     }
+  };
+
+  const handleEditKlant = (klant: any) => {
+    // Parseren van bestaande data
+    let prijsVan = '';
+    let prijsTot = '';
+    if (klant.Prijsklasse) {
+      const parts = klant.Prijsklasse.replace(/€/g, '').split(/[–-]/);
+      if (parts.length >= 2) {
+        prijsVan = parts[0].trim().replace(/\./g, '');
+        prijsTot = parts[1].trim().replace(/\./g, '');
+      } else {
+        prijsVan = parts[0].trim().replace(/\./g, '');
+      }
+    }
+
+    setNewKlant({
+      ...newKlant,
+      Naam: klant.Naam || '',
+      Regio: klant.Regio || '',
+      BijzonderhedenRegio: klant['Bijzonderheden Regio'] || '',
+      Prijsklasse: prijsVan,
+      PrijsMax: prijsTot,
+      Objectsoort: klant.Objectsoort || 'woonhuis_appartement',
+      Soort: klant.Soort?.toLowerCase() || 'koop',
+      Bouwvorm: klant.Bouwvorm?.toLowerCase() || 'beide',
+      Woonoppervlakte: klant.Woonoppervlakte || '',
+      Perceeloppervlakte: klant.Perceeloppervlakte || '',
+      AantalKamers: klant.AantalKamers || '',
+      AantalSlaapkamers: klant.AantalSlaapkamers || '',
+      Energielabel: klant.Energielabel || '',
+      Email: klant.Email || '',
+      Notificatie: klant.Notificatie || 'direct',
+      MinMatchPercentage: klant.MinMatchPercentage || '80',
+      GeselecteerdeLocaties: klant.Regio ? klant.Regio.split(',').map((s: string) => s.trim()) : [],
+      // Hulpvelden die gecombineerd waren
+      BijzondereKenmerken: klant['Bijzondere Kenmerken'] || '',
+    });
+
+    setEditingKlantRow(klant.row_number || klant.rowNumber);
+    setAddKlantStep(1);
+    setShowAddKlantModal(true);
   };
 
   const refreshScans = async () => {
@@ -2105,8 +2174,9 @@ export default function App() {
                    klanten={klantenLijst} 
                    refreshing={refreshingKlanten} 
                    onRefresh={refreshKlanten} 
-                   onAddKlant={() => setShowAddKlantModal(true)} 
+                   onAddKlant={() => { setEditingKlantRow(null); resetAddKlantForm(); setShowAddKlantModal(true); }} 
                    onDeleteKlant={handleDeleteKlant}
+                   onEditKlant={handleEditKlant}
                    deletingRow={deletingKlantRow}
                 />
               ) : activeView === 'email-scraper' ? (
@@ -2155,7 +2225,7 @@ export default function App() {
                     <div className="px-5 py-3 border-b border-slate-200 flex justify-between items-center bg-white flex-shrink-0">
                       <h3 className="text-sm font-semibold text-[#2d3e50] flex items-center gap-2">
                         <UserPlus className="text-[#e67e22]" size={17} />
-                        Nieuw zoekprofiel toevoegen
+                        {editingKlantRow ? 'Zoekprofiel bewerken' : 'Nieuw zoekprofiel toevoegen'}
                       </h3>
                       <button type="button" onClick={() => { setShowAddKlantModal(false); resetAddKlantForm(); }}
                         className="p-1.5 hover:bg-slate-100 rounded-full text-slate-400">
@@ -2659,8 +2729,8 @@ export default function App() {
                               </button>
                               <button type="submit" disabled={submittingKlant}
                                 className="px-10 py-1.5 bg-[#5b9bd5] hover:bg-[#4a8ac4] disabled:opacity-50 text-white text-sm font-medium rounded border border-[#3a7ab4] transition-colors flex items-center gap-2">
-                                {submittingKlant ? <RefreshCw size={14} className="animate-spin" /> : <UserPlus size={14} />}
-                                Profiel Opslaan
+                                {submittingKlant ? <RefreshCw size={14} className="animate-spin" /> : editingKlantRow ? <CheckCircle2 size={14} /> : <UserPlus size={14} />}
+                                {editingKlantRow ? 'Wijzigingen Opslaan' : 'Profiel Opslaan'}
                               </button>
                             </div>
                           </form>
