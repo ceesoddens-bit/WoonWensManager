@@ -679,7 +679,7 @@ const HouseScanCard: React.FC<{ scan: HouseScan, matches: any[] }> = ({ scan, ma
         </div>
 
         {/* Right Side: Map */}
-        <div className="w-full lg:w-[450px] h-[300px] lg:h-auto relative bg-slate-50 border-l border-slate-100 group">
+        <div className="w-full lg:w-[450px] h-[400px] relative bg-slate-50 border-l border-slate-100 group">
           <div className="absolute inset-0 grayscale-[0.2] contrast-[1.1] transition-all duration-700 group-hover:grayscale-0">
             <iframe 
               width="100%" 
