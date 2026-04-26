@@ -29,7 +29,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
-type View = 'nieuwste' | 'matches' | 'manager' | 'klanten' | 'email-scraper';
+type View = 'nieuwste' | 'vorige' | 'matches' | 'manager' | 'klanten' | 'email-scraper';
 
 // Types for our data
 interface Viewing {
@@ -1293,6 +1293,7 @@ export default function App() {
     return (saved as View) || 'nieuwste';
   });
   const [houseScans, setHouseScans] = useState<HouseScan[]>([]);
+  const [previousHouseScans, setPreviousHouseScans] = useState<HouseScan[]>([]);
   const [matches, setMatches] = useState<any[]>([]);
   const [klantenLijst, setKlantenLijst] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -1306,6 +1307,16 @@ export default function App() {
     }, {} as Record<string, HouseScan[]>);
     return grouped;
   }, [houseScans]);
+
+  const groupedPreviousScans = useMemo(() => {
+    const grouped = previousHouseScans.reduce((acc, scan) => {
+      const region = getRegion(scan.Plaats || '');
+      if (!acc[region]) acc[region] = [];
+      acc[region].push(scan);
+      return acc;
+    }, {} as Record<string, HouseScan[]>);
+    return grouped;
+  }, [previousHouseScans]);
 
   const regionOrder = ['Maastricht', 'heuvelland', 'parkstad', 'westelijke mijnstreek', 'Echt Roermond', 'overige'];
   
@@ -1624,6 +1635,18 @@ export default function App() {
       {/* Sidebar */}
       <aside className="w-20 flex flex-col items-center py-8 bg-[#141e2b] gap-8 border-r border-slate-800">
         <SidebarIcon view="nieuwste" icon={Home} label="Nieuwste huizen" />
+        <SidebarIcon 
+          view="vorige" 
+          icon={(props: any) => (
+            <div className="relative">
+              <Home {...props} />
+              <div className="absolute -bottom-1 -right-1 bg-[#e74c3c] text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center border-2 border-[#141e2b]">
+                2
+              </div>
+            </div>
+          )} 
+          label="Huizen van gisteren" 
+        />
         <SidebarIcon view="matches" icon={MatchIcon} label="Matches" />
         <SidebarIcon view="manager" icon={ClipboardList} label="Manager" />
         <SidebarIcon view="klanten" icon={UserPlus} label="Klanten Profielen" />
@@ -2114,6 +2137,59 @@ export default function App() {
                     ) : (
                       <div className="text-center p-20 text-slate-400 font-medium">
                         Geen scans gevonden. Nieuwe huizen verschijnen hier zodra de scraper draait.
+                      </div>
+                    )}
+                  </div>
+                </motion.div>
+              ) : activeView === 'vorige' ? (
+                <motion.div
+                  key="vorige"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="space-y-8"
+                >
+                  <div className="flex justify-between items-end mb-4">
+                    <div>
+                      <h2 className="text-4xl font-bold text-[#2d3e50] mb-2">Huizen van gisteren</h2>
+                      <p className="text-slate-500 text-lg">Overzicht van woningen uit de 1 na laatste scan</p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="bg-slate-100 text-slate-600 px-6 py-3 rounded-2xl font-bold text-sm flex items-center gap-3 shadow-sm border border-slate-200">
+                        <Clock size={18} />
+                        Scan van gisteren
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-12 pb-12">
+                    {loading ? (
+                      <div className="flex justify-center p-20">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                      </div>
+                    ) : previousHouseScans.length > 0 ? (
+                      regionOrder.map(region => (
+                        groupedPreviousScans[region] && groupedPreviousScans[region].length > 0 && (
+                          <div key={region} className="space-y-6">
+                            <div className="flex items-baseline gap-4 mb-8">
+                              <h3 className="text-6xl font-black text-[#2d3e50] capitalize tracking-tighter">
+                                {region}
+                              </h3>
+                              <span className="text-2xl font-bold text-slate-300">
+                                — {groupedPreviousScans[region].length} woningen
+                              </span>
+                            </div>
+                            <div className="grid grid-cols-1 gap-8">
+                              {groupedPreviousScans[region].map((scan) => (
+                                <HouseScanCard key={`${scan.ID}-${scan.adres}`} scan={scan} matches={matches} />
+                              ))}
+                            </div>
+                          </div>
+                        )
+                      ))
+                    ) : (
+                      <div className="text-center p-20 text-slate-400 font-medium">
+                        Geen data beschikbaar voor de gisteren-scan.
                       </div>
                     )}
                   </div>
