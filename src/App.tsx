@@ -354,12 +354,27 @@ const parseN8nScans = async (houses: any[]) => {
   const processed = [];
   console.log(`📦 Verwerken van ${houses.length} ruwe scans...`);
   for (const house of houses) {
-    // Normaliseer keys (sommige webhooks gebruiken 'address' of lowercase)
+    // Normaliseer keys (sommige webhooks gebruiken 'address', 'Adres', etc.)
     Object.keys(house).forEach(k => {
       const lowerK = k.toLowerCase();
-      if (lowerK === 'address' && !house.adres) house.adres = house[k];
+      // Adres
+      if ((lowerK === 'address' || lowerK === 'adres') && !house.adres) house.adres = house[k];
+      // Plaats
       if (lowerK === 'plaats' && !house.Plaats) house.Plaats = house[k];
+      // Wijk
       if (lowerK === 'wijk' && !house.Wijk) house.Wijk = house[k];
+      // Status
+      if (lowerK === 'status' || lowerK === 'satus') house.status = house[k];
+      // Datum
+      if (lowerK === 'datum') house.Datum = house[k];
+      // Link
+      if (lowerK === 'link') house.link = house[k];
+      // m2
+      if (lowerK === 'm2' || lowerK === 'oppervlakte') house.m2 = house[k];
+      if (lowerK === 'm2 perseel' || lowerK === 'm2 perceel' || lowerK === 'perceel') house["m2 perseel"] = house[k];
+      // Makelaar / Prijs are handled below but we can do them here too
+      if (lowerK.includes('prijs')) house.Prijs = house[k];
+      if (lowerK.includes('makelaar') || lowerK.includes('verkoper')) house.Makelaar = house[k];
     });
 
     if (!house.adres || !house.Plaats) {
@@ -375,16 +390,6 @@ const parseN8nScans = async (houses: any[]) => {
     house.status = house.status || house.satus || 'Beschikbaar';
     house.m2 = (house.m2 || '--').toString().replace(/&#178;/g, '²');
     house["m2 perseel"] = (house["m2 perseel"] || '--').toString().replace(/&#178;/g, '²');
-    
-    Object.keys(house).forEach(k => {
-      const key = k.toLowerCase();
-      if (key.includes('prijs') && !house.Prijs) {
-        house.Prijs = house[k];
-      }
-      if (key.includes('makelaar') || key.includes('verkoper')) {
-        house.Makelaar = house[k];
-      }
-    });
 
     if (typeof house.Prijs === 'number') {
       house.Prijs = '€ ' + house.Prijs.toLocaleString('nl-NL');
@@ -395,7 +400,7 @@ const parseN8nScans = async (houses: any[]) => {
     }
     
     house.Prijs = house.Prijs || 'Prijs op aanvraag';
-    house.Makelaar = house.Makelaar || house.makelaar || house.Makelaar || 'Onbekende Makelaar';
+    house.Makelaar = house.Makelaar || 'Onbekende Makelaar';
     if (house.Makelaar === 'Zie link') house.Makelaar = 'Onbekende Makelaar';
     if (!house.Datum) house.Datum = new Date().toLocaleDateString('nl-NL');
     processed.push(house);
