@@ -103,6 +103,7 @@ const N8N_KLANTEN_URL = 'https://woonwensmakelaar.app.n8n.cloud/webhook/69dda1df
 const N8N_ADD_KLANT_URL = 'https://woonwensmakelaar.app.n8n.cloud/webhook/e4488576-ecab-4b82-8196-b3922eba62de';
 const N8N_DELETE_KLANT_URL = 'https://woonwensmakelaar.app.n8n.cloud/webhook/8bf75a4c-2771-4d38-ad29-c5682e74bdfd';
 const N8N_UPDATE_KLANT_URL = 'https://woonwensmakelaar.app.n8n.cloud/webhook/05d8cc66-ac17-4118-b160-c1a845116743';
+const N8N_PREVIOUS_SCANS_URL = 'https://woonwensmakelaar.app.n8n.cloud/webhook/8a1ca729-88f1-4635-994b-169f8f1274cb';
 
 const getRegion = (plaats: string): string => {
   if (!plaats) return 'overige';
@@ -351,8 +352,20 @@ function parseStructuredN8nMatches(sourceArray: any[], datum: string): any[] {
 
 const parseN8nScans = async (houses: any[]) => {
   const processed = [];
+  console.log(`📦 Verwerken van ${houses.length} ruwe scans...`);
   for (const house of houses) {
-    if (!house.adres || !house.Plaats) continue;
+    // Normaliseer keys (sommige webhooks gebruiken 'address' of lowercase)
+    Object.keys(house).forEach(k => {
+      const lowerK = k.toLowerCase();
+      if (lowerK === 'address' && !house.adres) house.adres = house[k];
+      if (lowerK === 'plaats' && !house.Plaats) house.Plaats = house[k];
+      if (lowerK === 'wijk' && !house.Wijk) house.Wijk = house[k];
+    });
+
+    if (!house.adres || !house.Plaats) {
+      console.warn('⚠️ Scan overgeslagen: mist adres of plaats', house);
+      continue;
+    }
     
     // Optioneel: wijk opzoeken als deze ontbreekt
     if (!house.Wijk || house.Wijk === 'Onbekend') {
@@ -1337,6 +1350,20 @@ export default function App() {
         const scansProcessed = await parseN8nScans(Array.isArray(scansRaw) ? scansRaw : (scansRaw.data || []));
         setHouseScans(scansProcessed);
 
+        // 1b. Vorige scans ophalen
+        try {
+          const prevScansRes = await fetch(N8N_PREVIOUS_SCANS_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ trigger: 'fetch_latest', source: 'WoonWensManager' })
+          });
+          const prevScansRaw = await prevScansRes.json();
+          const prevScansProcessed = await parseN8nScans(Array.isArray(prevScansRaw) ? prevScansRaw : (prevScansRaw.data || []));
+          setPreviousHouseScans(prevScansProcessed);
+        } catch (e) {
+          console.error('Error fetching previous scans:', e);
+        }
+
         // 2. Matches ophalen
         const matchesRes = await fetch(N8N_MATCHES_URL, {
           method: 'POST',
@@ -2155,6 +2182,35 @@ export default function App() {
                       <p className="text-slate-500 text-lg">Overzicht van woningen uit de 1 na laatste scan</p>
                     </div>
                     <div className="flex items-center gap-3">
+                      <button 
+                        onClick={async () => {
+                          setRefreshingScans(true);
+                          try {
+                            const res = await fetch(N8N_PREVIOUS_SCANS_URL, {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ trigger: 'fetch_latest', source: 'WoonWensManager' })
+                            });
+                            const data = await res.json();
+                            const processed = await parseN8nScans(Array.isArray(data) ? data : (data.data || []));
+                            setPreviousHouseScans(processed);
+                            alert(`Succesvol ${processed.length} scans van gisteren opgehaald!`);
+                          } catch (error) {
+                            alert('Fout bij verversen scans van gisteren.');
+                          } finally {
+                            setRefreshingScans(false);
+                          }
+                        }}
+                        disabled={refreshingScans}
+                        className={`px-6 py-3 rounded-2xl font-bold text-sm flex items-center gap-3 transition-all shadow-lg ${
+                          refreshingScans 
+                            ? 'bg-slate-100 text-slate-400 cursor-not-allowed' 
+                            : 'bg-emerald-500 text-white hover:bg-emerald-600 active:scale-95'
+                        }`}
+                      >
+                        <RefreshCw size={18} className={refreshingScans ? 'animate-spin' : ''} />
+                        {refreshingScans ? 'Verversen...' : 'Scans gisteren verversen'}
+                      </button>
                       <div className="bg-slate-100 text-slate-600 px-6 py-3 rounded-2xl font-bold text-sm flex items-center gap-3 shadow-sm border border-slate-200">
                         <Clock size={18} />
                         Scan van gisteren
