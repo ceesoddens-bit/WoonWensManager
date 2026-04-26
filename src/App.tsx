@@ -594,7 +594,7 @@ const HouseScanCard: React.FC<{ scan: HouseScan, matches: any[] }> = ({ scan, ma
     >
       <div className="flex flex-col lg:flex-row min-h-[360px]">
         {/* Left Side: Info */}
-        <div className="flex-1 p-8 flex flex-col gap-6">
+        <div className="flex-1 p-8 flex flex-col gap-6 min-w-0">
           {/* Header with Address and Price */}
           <div className="flex flex-col md:flex-row justify-between items-start gap-4">
             <div className="flex-1">
@@ -664,7 +664,7 @@ const HouseScanCard: React.FC<{ scan: HouseScan, matches: any[] }> = ({ scan, ma
           )}
 
           {/* Link Section */}
-          <div className="mt-auto pt-4 flex flex-col sm:flex-row gap-3">
+          <div className="mt-auto pt-4 flex flex-col sm:flex-row gap-3 min-w-0">
             <button 
               onClick={() => window.open(scan.link, '_blank')}
               className="flex-1 py-4 bg-[#141e2b] text-white rounded-2xl font-bold flex items-center justify-center gap-3 hover:bg-slate-800 transition-all shadow-lg group"
@@ -672,7 +672,7 @@ const HouseScanCard: React.FC<{ scan: HouseScan, matches: any[] }> = ({ scan, ma
               <span>Woning bekijken</span>
               <ExternalLink size={20} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
             </button>
-            <div className="hidden sm:flex items-center px-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl min-w-0 flex-1 text-center">
+            <div className="hidden sm:flex items-center px-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl min-w-0 flex-1 text-center overflow-hidden">
                <p className="text-xs text-slate-400 font-medium truncate">{scan.link}</p>
             </div>
           </div>
