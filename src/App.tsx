@@ -25,11 +25,17 @@ import {
   ClipboardList,
   Trash2,
   Mail,
-  Pencil
+  Pencil,
+  FileText,
+  PenTool,
+  Sparkles,
+  Loader2,
+  Image as ImageIcon,
+  Check
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
-type View = 'nieuwste' | 'vorige' | 'matches' | 'manager' | 'klanten' | 'email-scraper';
+type View = 'nieuwste' | 'vorige' | 'matches' | 'manager' | 'klanten' | 'blog-post-maker';
 
 // Types for our data
 interface Viewing {
@@ -1305,6 +1311,185 @@ const MapSelector = ({ selectedLocations, selectedCoords, onSelect }: {
 
 
 
+const MOCK_EUROPEAN_INTERIOR_IMAGES = [
+  'https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&q=80&w=800',
+  'https://images.unsplash.com/photo-1445116572660-236099ec97a0?auto=format&fit=crop&q=80&w=800',
+  'https://images.unsplash.com/photo-1495474472207-464a4f15d862?auto=format&fit=crop&q=80&w=800',
+  'https://images.unsplash.com/photo-1481833761820-0509d3217039?auto=format&fit=crop&q=80&w=800',
+  'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&q=80&w=800',
+  'https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&q=80&w=800',
+  'https://images.unsplash.com/photo-1499916078039-922301b0eb9b?auto=format&fit=crop&q=80&w=800'
+];
+
+const getRandomImage = () => MOCK_EUROPEAN_INTERIOR_IMAGES[Math.floor(Math.random() * MOCK_EUROPEAN_INTERIOR_IMAGES.length)];
+
+const BlogPostMakerView = () => {
+  const [topic, setTopic] = useState('');
+  const [step, setStep] = useState<'input' | 'titles' | 'content'>('input');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [titles, setTitles] = useState<string[]>([]);
+  const [selectedTitle, setSelectedTitle] = useState<string | null>(null);
+  const [postContent, setPostContent] = useState('');
+  const [postImage, setPostImage] = useState('');
+
+  const generateTitles = () => {
+    if (!topic.trim()) return;
+    setIsGenerating(true);
+    // Simulate AI title generation
+    setTimeout(() => {
+      setTitles([
+        `10 Essentiële Tips voor: ${topic}`,
+        `Alles wat je moet weten over ${topic} in 2026`,
+        `De Ultieme Gids voor ${topic}`
+      ]);
+      setStep('titles');
+      setIsGenerating(false);
+    }, 1500);
+  };
+
+  const generateContent = () => {
+    if (!selectedTitle) return;
+    setIsGenerating(true);
+    // Simulate AI content & image generation
+    setTimeout(() => {
+      setPostContent(`Welkom bij onze nieuwste update over "${selectedTitle}".\n\nAls makelaar merken we dagelijks hoe belangrijk het is om onze klanten goed en tijdig te informeren over de nieuwste ontwikkelingen op de woningmarkt. Of je nu een starter bent die zijn eerste droomhuis zoekt, of je bent op zoek naar een ruime eengezinswoning in een rustige wijk, de markt is constant in beweging.\n\nWaarom is dit op dit moment zo relevant?\nDe afgelopen maanden zien we een duidelijke verschuiving in de wensen van kopers. Met deze blogpost willen we je graag meenemen in de belangrijkste trends en je voorzien van handige, direct toepasbare tips rondom "${topic}".\n\nBelangrijkste punten om rekening mee te houden:\n1. Wees altijd goed voorbereid op de bezichtiging. Een eerste indruk telt niet alleen voor de koper, maar ook voor de verkoper. Neem de tijd om alles rustig op je in te laten werken.\n2. Zorg dat je financiële plaatje vooraf glashelder is. Dit geeft je een enorme voorsprong bij het uitbrengen van een bod in de huidige competitieve markt.\n3. Schakel tijdig een ervaren aankoopmakelaar in. Wij kennen de lokale markt als geen ander en begeleiden je stap voor stap.\n\nWe hopen dat deze inzichten je helpen bij je zoektocht. Heb je nog vragen of wil je eens vrijblijvend praten over jouw persoonlijke woonwensen? Neem dan gerust contact met ons op. Ons team staat altijd voor je klaar met een verse kop koffie en een goed advies!\n\n(Let op: Deze tekst is gegenereerd door onze tijdelijke gratis AI-module. Binnenkort koppelen we Gemini en Nano Banana voor nog betere, gepersonaliseerde teksten!)`);
+      setPostImage(getRandomImage());
+      setStep('content');
+      setIsGenerating(false);
+    }, 2000);
+  };
+
+  return (
+    <motion.div
+      key="blog-post-maker"
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -10 }}
+      className="mt-8"
+    >
+      <div className="bg-white rounded-3xl shadow-xl p-8 lg:p-12 border border-slate-100 min-h-[600px] flex flex-col">
+        <div className="flex items-center gap-4 mb-6">
+          <div className="w-16 h-16 bg-gradient-to-br from-[#e8f4fb] to-[#cfe2f3] rounded-2xl flex items-center justify-center text-[#5b9bd5] shadow-sm border border-[#cfe2f3]">
+            <PenTool size={32} strokeWidth={1.5} />
+          </div>
+          <div>
+            <h2 className="text-3xl font-bold text-[#141e2b]">Blog Post Maker</h2>
+            <p className="text-slate-500 font-medium">Genereer razendsnel content met AI</p>
+          </div>
+        </div>
+
+        <div className="mb-8 p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-3">
+          <div className="text-amber-600 mt-0.5">⚠️</div>
+          <div>
+            <p className="text-amber-800 font-bold text-sm">Let op: Demo Versie</p>
+            <p className="text-amber-700 text-sm mt-1">
+              Er is nog geen echte AI gekoppeld en gemaakte blog posts worden momenteel <strong>niet opgeslagen</strong>. 
+              Dit is een preview versie. Binnenkort koppelen we Gemini en Nano Banana voor het genereren en opslaan van échte content.
+            </p>
+          </div>
+        </div>
+
+        {step === 'input' && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex-1 flex flex-col justify-center max-w-2xl w-full mx-auto">
+            <div className="bg-slate-50 p-8 rounded-2xl border border-slate-100">
+              <label className="block text-sm font-bold text-slate-700 mb-3">Waar wil je over schrijven?</label>
+              <input 
+                type="text" 
+                value={topic}
+                onChange={(e) => setTopic(e.target.value)}
+                placeholder="Bijv. Een huis kopen in 2026, tips voor bezichtigingen..."
+                className="w-full px-4 py-4 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#5b9bd5] text-lg mb-6 shadow-sm"
+                onKeyDown={(e) => e.key === 'Enter' && generateTitles()}
+              />
+              <button 
+                onClick={generateTitles}
+                disabled={!topic.trim() || isGenerating}
+                className="w-full py-4 bg-[#5b9bd5] hover:bg-[#4a8ac4] disabled:opacity-50 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg"
+              >
+                {isGenerating ? <Loader2 className="animate-spin" /> : <Sparkles />}
+                {isGenerating ? 'AI is aan het nadenken...' : 'Genereer Titels'}
+              </button>
+            </div>
+            <p className="text-center mt-6 text-sm text-slate-400">Gebruikt momenteel een gratis simulatie-AI. Binnenkort gekoppeld aan Gemini & Nano Banana.</p>
+          </motion.div>
+        )}
+
+        {step === 'titles' && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex-1 max-w-3xl w-full mx-auto">
+            <h3 className="text-xl font-bold text-[#141e2b] mb-6 flex items-center gap-2">
+              <Check className="text-emerald-500" /> Kies een pakkende titel:
+            </h3>
+            <div className="space-y-4 mb-8">
+              {titles.map((t, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setSelectedTitle(t)}
+                  className={`w-full text-left p-5 rounded-xl border-2 transition-all ${selectedTitle === t ? 'border-[#5b9bd5] bg-[#e8f4fb] shadow-md' : 'border-slate-100 hover:border-[#cfe2f3] hover:bg-slate-50'}`}
+                >
+                  <p className={`text-lg font-semibold ${selectedTitle === t ? 'text-[#1a5c8a]' : 'text-slate-700'}`}>{t}</p>
+                </button>
+              ))}
+            </div>
+            <div className="flex gap-4">
+              <button 
+                onClick={() => setStep('input')}
+                className="px-6 py-4 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold transition-all"
+              >
+                Terug
+              </button>
+              <button 
+                onClick={generateContent}
+                disabled={!selectedTitle || isGenerating}
+                className="flex-1 py-4 bg-[#5b9bd5] hover:bg-[#4a8ac4] disabled:opacity-50 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg"
+              >
+                {isGenerating ? <Loader2 className="animate-spin" /> : <FileText />}
+                {isGenerating ? 'Content genereren...' : 'Genereer Tekst & Afbeelding'}
+              </button>
+            </div>
+          </motion.div>
+        )}
+
+        {step === 'content' && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex-1">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-2xl font-bold text-[#141e2b]">{selectedTitle}</h3>
+              <button onClick={() => { setStep('input'); setTopic(''); setSelectedTitle(null); }} className="text-[#5b9bd5] hover:text-[#4a8ac4] text-sm font-bold flex items-center gap-1">
+                <RefreshCw size={14} /> Nieuwe Post
+              </button>
+            </div>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100">
+                <div className="flex items-center gap-2 mb-4 text-slate-400 font-bold uppercase tracking-widest text-xs">
+                  <ImageIcon size={14} /> Gegenereerde Afbeelding
+                </div>
+                <img src={postImage} alt={selectedTitle || 'Blog afbeelding'} className="w-full h-64 object-cover rounded-xl shadow-sm mb-4" />
+                <button onClick={() => setPostImage(getRandomImage())} className="w-full py-3 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-xl font-bold flex items-center justify-center gap-2 transition-all">
+                  <ImageIcon size={18} /> Andere Afbeelding Genereren
+                </button>
+              </div>
+              
+              <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100">
+                <div className="flex items-center gap-2 mb-4 text-slate-400 font-bold uppercase tracking-widest text-xs">
+                  <FileText size={14} /> Gegenereerde Tekst
+                </div>
+                <textarea 
+                  value={postContent}
+                  onChange={(e) => setPostContent(e.target.value)}
+                  className="w-full h-64 p-4 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#5b9bd5] bg-white leading-relaxed text-slate-700 resize-none mb-4"
+                />
+                <button onClick={() => navigator.clipboard.writeText(postContent)} className="w-full py-3 bg-[#5b9bd5] hover:bg-[#4a8ac4] text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-sm">
+                  <Copy size={18} /> Kopieer Content
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </div>
+    </motion.div>
+  );
+};
+
 export default function App() {
   const [activeView, setActiveView] = useState<View>(() => {
     const saved = localStorage.getItem('woonwensActiveView');
@@ -1682,7 +1867,7 @@ export default function App() {
         <SidebarIcon view="matches" icon={MatchIcon} label="Matches" />
         <SidebarIcon view="manager" icon={ClipboardList} label="Manager" />
         <SidebarIcon view="klanten" icon={UserPlus} label="Klanten Profielen" />
-        <SidebarIcon view="email-scraper" icon={Mail} label="E-mail Scraper" />
+        <SidebarIcon view="blog-post-maker" icon={PenTool} label="Blog Post Maker" />
       </aside>
 
       {/* Main Content */}
@@ -2316,29 +2501,8 @@ export default function App() {
                    onEditKlant={handleEditKlant}
                    deletingRow={deletingKlantRow}
                 />
-              ) : activeView === 'email-scraper' ? (
-                <motion.div
-                  key="email-scraper"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  className="mt-8"
-                >
-                  <div className="bg-white rounded-3xl shadow-xl p-12 border border-slate-100 flex flex-col items-center text-center">
-                    <div className="w-20 h-20 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 mb-6">
-                      <Mail size={40} strokeWidth={1.5} />
-                    </div>
-                    <h2 className="text-3xl font-bold text-[#141e2b] mb-4">E-mail Scraper</h2>
-                    <p className="text-slate-500 max-w-md leading-relaxed text-lg">
-                      Deze module is momenteel in ontwikkeling. Binnenkort kun je hier e-mails importeren en automatisch verwerken tot klantprofielen.
-                    </p>
-                    <div className="mt-8 flex gap-4">
-                      <div className="px-4 py-2 bg-slate-50 rounded-xl border border-slate-100 text-xs font-bold text-slate-400 uppercase tracking-widest">
-                        Status: Bèta
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
+              ) : activeView === 'blog-post-maker' ? (
+                <BlogPostMakerView key="blog-post-maker" />
               ) : null}
             </AnimatePresence>
             
