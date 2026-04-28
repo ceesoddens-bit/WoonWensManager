@@ -416,171 +416,6 @@ const parseN8nScans = async (houses: any[]) => {
 
 // --- Einde N8N Helpers ---
 
-const DUMMY_CUSTOMERS: Customer[] = [
-  {
-    id: '1',
-    name: 'Kenny Jeurissen',
-    profile: {
-      regio: 'Sittard, Nieuwstadt en omstreken',
-      bijzonderhedenRegio: 'de woonwijken Ophoven en Overhoven en woonplaats Nieuwstadt',
-      prijsklasse: 'tot en met € 350.000,-',
-      woningtype: 'Halfvrijstaand, tweekapper, vrijstaande woning',
-      bijzondereKenmerken: 'geen'
-    },
-    viewings: [
-      { address: 'Parkstraat 9, Amstenrade', dateTime: '26/03/26 - 11:00' }
-    ],
-    totalViewings: 1,
-    offers: [],
-    structuralInspection: { status: 'Nee' },
-    contract: { status: 'Nee' }
-  },
-  {
-    id: '2',
-    name: 'Merel en Yerke',
-    profile: {
-      regio: 'Echt, Susteren, Roosteren, Nieuwstadt, Maasgouw, Ohe en Laak, Stevensweert en omstreken',
-      bijzonderhedenRegio: 'n.v.t.',
-      prijsklasse: 'tot en met € 350.000,-',
-      woningtype: 'tussenwoning, tweekapper, halfvrijstaand, vrijstaand',
-      bijzondereKenmerken: 'geen'
-    },
-    viewings: [
-      { address: 'Kerkstraat 12, Echt', dateTime: '20/03/26 - 14:00' },
-      { address: 'Molenweg 5, Susteren', dateTime: '22/03/26 - 10:00' },
-      { address: 'Julianastraat 44, Roosteren', dateTime: '24/03/26 - 09:30' },
-      { address: 'Heerenstraat 2, Nieuwstadt', dateTime: '25/03/26 - 16:15' }
-    ],
-    totalViewings: 12,
-    offers: [
-      { amount: '€ 315.000', address: 'Kerkstraat 12', status: 'Afgewezen' },
-      { amount: '€ 340.000', address: 'Molenweg 5', status: 'Rood' },
-      { amount: '€ 345.000', address: 'Julianastraat 44', status: 'Geaccepteerd' }
-    ],
-    structuralInspection: { status: 'Gereed', date: '25/03/26', inspectorName: 'Jan de Bouwer' },
-    contract: { status: 'Nee' }
-  },
-  {
-    id: '3',
-    name: 'Joost en Joe',
-    profile: {
-      regio: 'Maastricht',
-      bijzonderhedenRegio: 'Statenkwartier, Hoge Barakken, Lindenkruis',
-      prijsklasse: 'tot en met € 850.000,-',
-      woningtype: 'Vrijstaand, geschakelde woning, halfvrijstaande woning',
-      bijzondereKenmerken: 'bouwjaar maximaal 20 jaar oud'
-    },
-    viewings: [
-      { address: 'Boschstraat 85D, Maastricht', dateTime: '26/03/26 - 15:30' }
-    ],
-    totalViewings: 1,
-    offers: [
-      { amount: '€ 325.000', address: 'Boschstraat 85D', status: 'Afgewezen' }
-    ],
-    structuralInspection: { status: 'Nee' },
-    contract: { status: 'Nee' }
-  },
-  {
-    id: '4',
-    name: 'Bart Snel',
-    profile: {
-      regio: 'Spaubeek, Neerbeek, Beek, Sweikhuizen, Geleen, Puth en omstreken',
-      bijzonderhedenRegio: 'n.v.t.',
-      prijsklasse: 'tot en met € 300.000,-',
-      woningtype: 'Halfvrijstaand, tweekapper',
-      bijzondereKenmerken: 'Minimaal 3 slaapkamer'
-    },
-    viewings: [],
-    totalViewings: 0,
-    offers: [],
-    structuralInspection: { status: 'Nee' },
-    contract: { status: 'Nee' }
-  },
-  {
-    id: '5',
-    name: 'Irvina en Michel',
-    profile: {
-      regio: 'Maastricht',
-      bijzonderhedenRegio: 'Amby, Brusselsepoort, Caberg, De Heeg, Heer, Heugem, Oud-caberg, Randwyck, Scharn, Sint Pieter, Vroendaal',
-      prijsklasse: 'tot en met € 600.000,-',
-      woningtype: 'Tweekapper, 2-onder-1 kapwoning, vrijstaande woning',
-      bijzondereKenmerken: 'Instapklare woning, extra ruimte voor een hobbyruimte (mogelijke verbouwing garage)'
-    },
-    viewings: [
-      { address: 'Boschstraat 85D, Maastricht', dateTime: '26/03/26 - 16:00' }
-    ],
-    totalViewings: 1,
-    offers: [],
-    structuralInspection: { status: 'Ingepland', date: '28/03/26', inspectorName: 'Pieter Keuringen' },
-    contract: { status: 'Nee' }
-  },
-  {
-    id: '6',
-    name: 'Avital en Rico',
-    profile: {
-      regio: 'Geulle, Meerssen, Beek, Elsloo, Bunde en omstreken',
-      prijsklasse: 'tot en met € 1.000.000,-',
-      woningtype: 'Vrijstaand',
-      bijzondereKenmerken: 'minimaal perceel van 2500 m2'
-    },
-    viewings: [],
-    totalViewings: 0,
-    offers: [],
-    structuralInspection: { status: 'Nee' },
-    contract: { status: 'Nee' }
-  },
-  {
-    id: '7',
-    name: 'Marly en Mitchell Takacs',
-    profile: {
-      regio: 'Vlodrop, Melick, Herkenbosch, St. Odilienberg, Posterholt, Maasniel, Hoogvonderen, Roer-zuid, Herten, Merum, Linne',
-      prijsklasse: 'tot en met € 470.000,-',
-      woningtype: 'Vrijstaand of halfvrijstaand',
-      bijzondereKenmerken: 'oprit en garage'
-    },
-    viewings: [],
-    totalViewings: 0,
-    offers: [],
-    structuralInspection: { status: 'Nee' },
-    contract: { status: 'Nee' }
-  },
-  {
-    id: '8',
-    name: 'Saskia Essers',
-    profile: {
-      regio: 'Midden Limburg en Zuid Limburg',
-      prijsklasse: 'tot en met € 390.000,-',
-      woningtype: 'Levensloopbestendige woning, bungalow',
-      bijzondereKenmerken: 'n.v.t.'
-    },
-    viewings: [
-      { address: 'Onze Lieve Vrouwestraat 46B 3, Ospel', dateTime: '26/03/26 - 10:00' },
-      { address: 'Hoogpoort 214, Weert', dateTime: '26/03/26 - 12:00' }
-    ],
-    totalViewings: 2,
-    offers: [],
-    structuralInspection: { status: 'Nee' },
-    contract: { status: 'Nee' }
-  },
-  {
-    id: '9',
-    name: 'Renaldo1',
-    profile: {
-      regio: 'Beek, Spaubeek',
-      prijsklasse: 'tot en met € 950.000,-',
-      woningtype: 'Alle woningtypes',
-      bijzondereKenmerken: 'n.v.t.'
-    },
-    viewings: [],
-    totalViewings: 0,
-    offers: [],
-    structuralInspection: { status: 'Nee' },
-    contract: { status: 'Nee' }
-  }
-];
-
-
-
 const MatchIcon = ({ size = 24, strokeWidth = 1.5, className = "" }: any) => (
   <svg
     viewBox="0 0 24 24"
@@ -1582,13 +1417,6 @@ export default function App() {
 
   }, []);
 
-  const [selectedViewing, setSelectedViewing] = useState<{
-    address: string;
-    dateTime: string;
-    customerName: string;
-    details?: string;
-  } | null>(null);
-  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
   const refreshMatches = async () => {
@@ -1896,264 +1724,81 @@ export default function App() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
                 >
-                  {/* Viewing Details Modal */}
-                  <AnimatePresence>
-                    {selectedViewing && (
-                      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
-                        <motion.div
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          exit={{ opacity: 0 }}
-                          onClick={() => setSelectedViewing(null)}
-                          className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
-                        />
-                        <motion.div
-                          initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                          animate={{ opacity: 1, scale: 1, y: 0 }}
-                          exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                          className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-200"
-                        >
-                          <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-                            <h3 className="text-xl font-bold text-[#2d3e50]">Bezichtiging Details</h3>
-                            <button
-                              onClick={() => setSelectedViewing(null)}
-                              className="p-2 hover:bg-slate-200 rounded-full transition-colors text-slate-500"
-                            >
-                              <X size={20} />
-                            </button>
-                          </div>
-
-                          <div className="p-8 space-y-6">
-                            <div className="flex items-start gap-4">
-                              <div className="w-12 h-12 rounded-2xl bg-blue-100 flex items-center justify-center text-blue-600 flex-shrink-0">
-                                <Home size={24} />
-                              </div>
-                              <div>
-                                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Adres</p>
-                                <p className="text-lg font-bold text-[#2d3e50]">{selectedViewing.address}</p>
-                              </div>
-                            </div>
-
-                            <div className="flex items-start gap-4">
-                              <div className="w-12 h-12 rounded-2xl bg-emerald-100 flex items-center justify-center text-emerald-600 flex-shrink-0">
-                                <Calendar size={24} />
-                              </div>
-                              <div>
-                                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Datum & Tijd</p>
-                                <p className="text-lg font-bold text-[#2d3e50]">{selectedViewing.dateTime}</p>
-                              </div>
-                            </div>
-
-                            <div className="flex items-start gap-4">
-                              <div className="w-12 h-12 rounded-2xl bg-amber-100 flex items-center justify-center text-amber-600 flex-shrink-0">
-                                <Users size={24} />
-                              </div>
-                              <div>
-                                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Klant</p>
-                                <p className="text-lg font-bold text-[#2d3e50]">{selectedViewing.customerName}</p>
-                              </div>
-                            </div>
-
-                            <div className="pt-4 border-t border-slate-100">
-                              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Onderzoek naar omgevings factoren is gereed</p>
-                              <div className="bg-emerald-50 rounded-2xl p-4 border border-emerald-100 mb-6">
-                                <div className="flex items-center gap-3 mb-2">
-                                  <div className="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center text-emerald-600">
-                                    <Search size={16} />
-                                  </div>
-                                  <span className="font-bold text-emerald-800">Volledig onderzoek beschikbaar</span>
-                                </div>
-                                <p className="text-emerald-700 text-sm leading-relaxed">
-
-                                </p>
-                                <button className="mt-3 w-full py-2 bg-emerald-600 text-white rounded-xl font-bold text-sm hover:bg-emerald-700 transition-colors shadow-sm">
-                                  Bekijken / Downloaden
-                                </button>
-                              </div>
-
-                              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Extra Informatie</p>
-                              <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
-                                <p className="text-slate-600 leading-relaxed italic">
-                                  {selectedViewing.details}
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="p-6 bg-slate-50 border-t border-slate-100 flex justify-end">
-                            <button
-                              onClick={() => setSelectedViewing(null)}
-                              className="px-6 py-2 bg-[#141e2b] text-white rounded-xl font-bold hover:bg-slate-800 transition-colors"
-                            >
-                              Sluiten
-                            </button>
-                          </div>
-                        </motion.div>
-                      </div>
-                    )}
-                  </AnimatePresence>
-
-                  {/* Customer Details Modal */}
-                  <AnimatePresence>
-                    {selectedCustomer && (
-                      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
-                        <motion.div
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          exit={{ opacity: 0 }}
-                          onClick={() => setSelectedCustomer(null)}
-                          className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
-                        />
-                        <motion.div
-                          initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                          animate={{ opacity: 1, scale: 1, y: 0 }}
-                          exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                          className="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-200"
-                        >
-                          <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-                            <h3 className="text-xl font-bold text-[#2d3e50]">Klant Dossier: {selectedCustomer.name}</h3>
-                            <button
-                              onClick={() => setSelectedCustomer(null)}
-                              className="p-2 hover:bg-slate-200 rounded-full transition-colors text-slate-500"
-                            >
-                              <X size={20} />
-                            </button>
-                          </div>
-
-                          <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
-                            <div className="space-y-6">
-                              <div>
-                                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Zoekprofiel</h4>
-                                <div className="space-y-3 bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                                  <div className="flex items-start gap-2 text-sm">
-                                    <MapPin size={14} className="text-slate-400 mt-1" />
-                                    <span>{selectedCustomer.profile.regio}</span>
-                                  </div>
-                                  <div className="flex items-start gap-2 text-sm">
-                                    <span className="text-slate-400 font-bold">€</span>
-                                    <span>{selectedCustomer.profile.prijsklasse}</span>
-                                  </div>
-                                  <div className="flex items-start gap-2 text-sm">
-                                    <Home size={14} className="text-slate-400 mt-1" />
-                                    <span>{selectedCustomer.profile.woningtype}</span>
-                                  </div>
-                                </div>
-                              </div>
-
-                              <div>
-                                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Status</h4>
-                                <div className="flex gap-2">
-                                  <span className="badge badge-green">Actief</span>
-                                  <span className="badge badge-blue">Zoekend</span>
-                                </div>
-                              </div>
-                            </div>
-
-                            <div className="space-y-6">
-                              <div>
-                                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Recente Activiteit</h4>
-                                <div className="space-y-3">
-                                  {selectedCustomer.viewings.length > 0 ? (
-                                    <div className="text-sm text-slate-600">
-                                      Laatste bezichtiging: <span className="font-bold">{selectedCustomer.viewings[0].address}</span>
-                                    </div>
-                                  ) : (
-                                    <div className="text-sm text-slate-400 italic">Geen recente bezichtigingen</div>
-                                  )}
-                                  {selectedCustomer.offers.length > 0 && (
-                                    <div className="text-sm text-slate-600">
-                                      Laatste bod: <span className="font-bold text-emerald-600">{selectedCustomer.offers[0].amount}</span>
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-
-                              <div className="pt-4 border-t border-slate-100">
-                                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Notities</h4>
-                                <p className="text-sm text-slate-500 italic leading-relaxed">
-                                  Klant is zeer serieus en heeft financiering reeds rond. Voorkeur gaat uit naar een woning met veel lichtinval.
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="p-6 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
-                            <button
-                              className="px-6 py-2 border-2 border-[#141e2b] text-[#141e2b] rounded-xl font-bold hover:bg-white transition-colors"
-                            >
-                              Dossier Bewerken
-                            </button>
-                            <button
-                              onClick={() => setSelectedCustomer(null)}
-                              className="px-6 py-2 bg-[#141e2b] text-white rounded-xl font-bold hover:bg-slate-800 transition-colors"
-                            >
-                              Sluiten
-                            </button>
-                          </div>
-                        </motion.div>
-                      </div>
-                    )}
-                  </AnimatePresence>
-
                   <h2 className="text-3xl font-bold text-[#2d3e50] mb-6">
                     Klantoverzicht - <span className="text-[#2d3e50]">Woningaanbod & Bezichtgingen</span>
                   </h2>
 
+                  {klantenLijst.length === 0 ? (
+                    <div className="glass-card p-16 text-center text-slate-400">
+                      <Users size={48} className="mx-auto mb-4 text-slate-300" />
+                      <p className="font-semibold text-lg">Geen klanten gevonden</p>
+                      <p className="text-sm mt-1">Ga naar Klanten Profielen en verversen de data om klanten te laden.</p>
+                    </div>
+                  ) : (
                   <div className="glass-card overflow-x-auto border border-slate-300 custom-scrollbar">
                     <table className="w-full text-left border-collapse min-w-[1200px]">
                       <thead>
                         <tr className="table-header">
                           <th className="px-6 py-4 border-b border-slate-300">Klant</th>
                           <th className="px-6 py-4 border-b border-l border-slate-300">Bezichtigingen</th>
-                          <th className="px-6 py-4 border-b border-l border-slate-300">Bod</th>
+                          <th className="px-6 py-4 border-b border-l border-slate-300">Biedingen</th>
                           <th className="px-6 py-4 border-b border-l border-slate-300">Bouwkundige Keuring</th>
                           <th className="px-6 py-4 border-b border-l border-slate-300 text-center">Concept Koopcontract</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-300">
-                        {DUMMY_CUSTOMERS.map((customer) => (
-                          <tr key={customer.id} className="bg-white/40 hover:bg-white/60 transition-colors">
+                        {klantenLijst.map((klant, idx) => (
+                          <tr key={idx} className="bg-white/40 hover:bg-white/60 transition-colors">
+
                             {/* Klant Column */}
-                            <td
-                              className="px-6 py-6 align-top min-w-[250px] cursor-pointer hover:bg-slate-50/50 transition-colors"
-                              onClick={() => setSelectedCustomer(customer)}
-                            >
-                              <div className="flex flex-col gap-3">
-                                <span className="text-xl font-bold text-[#2d3e50] border-b border-slate-200 pb-1 group-hover:text-blue-600">{customer.name}</span>
-                                <div className="space-y-2">
+                            <td className="px-6 py-5 align-top min-w-[260px]">
+                              <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 flex flex-col gap-3">
+                                {/* Avatar + naam */}
+                                <div className="flex items-center gap-3">
+                                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#e67e22] to-orange-400 flex items-center justify-center text-white font-bold text-base shadow-sm flex-shrink-0">
+                                    {klant.Naam ? klant.Naam.charAt(0).toUpperCase() : '?'}
+                                  </div>
+                                  <div>
+                                    <p className="font-bold text-[#2d3e50] text-base leading-tight">{klant.Naam || 'Naamloos'}</p>
+                                    <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-bold ring-1 ring-inset ring-emerald-600/20">Actief</span>
+                                  </div>
+                                </div>
+
+                                {/* Profiel details */}
+                                <div className="space-y-1.5">
                                   <div className="flex items-start gap-2">
-                                    <MapPin size={14} className="text-slate-400 mt-0.5 flex-shrink-0" />
+                                    <MapPin size={12} className="text-slate-400 mt-0.5 flex-shrink-0" />
                                     <div className="text-xs text-slate-600">
-                                      <p className="font-bold text-slate-500 uppercase tracking-tighter text-[10px]">Regio</p>
-                                      <p>{customer.profile.regio}</p>
-                                      {customer.profile.bijzonderhedenRegio && customer.profile.bijzonderhedenRegio !== 'n.v.t.' && (
-                                        <p className="italic text-slate-400 mt-0.5">{customer.profile.bijzonderhedenRegio}</p>
+                                      <p className="font-bold text-slate-400 uppercase tracking-tighter text-[9px]">Regio</p>
+                                      <p className="leading-snug">{klant.Regio || '—'}</p>
+                                      {klant['Bijzonderheden Regio'] && klant['Bijzonderheden Regio'] !== 'n.v.t.' && klant['Bijzonderheden Regio'] !== 'geen' && (
+                                        <p className="italic text-slate-400 text-[10px] mt-0.5">{klant['Bijzonderheden Regio']}</p>
                                       )}
                                     </div>
                                   </div>
 
                                   <div className="flex items-start gap-2">
-                                    <div className="w-[14px] h-[14px] flex items-center justify-center text-slate-400 mt-0.5 flex-shrink-0 font-bold text-[10px]">€</div>
+                                    <span className="text-slate-400 font-bold text-[11px] mt-0.5 flex-shrink-0">€</span>
                                     <div className="text-xs text-slate-600">
-                                      <p className="font-bold text-slate-500 uppercase tracking-tighter text-[10px]">Prijsklasse</p>
-                                      <p>{customer.profile.prijsklasse}</p>
+                                      <p className="font-bold text-slate-400 uppercase tracking-tighter text-[9px]">Budget</p>
+                                      <p>{klant.Prijsklasse || '—'}</p>
                                     </div>
                                   </div>
 
                                   <div className="flex items-start gap-2">
-                                    <Home size={14} className="text-slate-400 mt-0.5 flex-shrink-0" />
+                                    <Home size={12} className="text-slate-400 mt-0.5 flex-shrink-0" />
                                     <div className="text-xs text-slate-600">
-                                      <p className="font-bold text-slate-500 uppercase tracking-tighter text-[10px]">Woningtype</p>
-                                      <p>{customer.profile.woningtype}</p>
+                                      <p className="font-bold text-slate-400 uppercase tracking-tighter text-[9px]">Woningtype</p>
+                                      <p className="leading-snug">{klant.Woningtype || '—'}</p>
                                     </div>
                                   </div>
 
-                                  {customer.profile.bijzondereKenmerken && customer.profile.bijzondereKenmerken !== 'geen' && customer.profile.bijzondereKenmerken !== 'n.v.t.' && (
+                                  {klant['Bijzondere Kenmerken'] && klant['Bijzondere Kenmerken'] !== 'geen' && klant['Bijzondere Kenmerken'] !== 'n.v.t.' && (
                                     <div className="flex items-start gap-2">
-                                      <div className="w-[14px] h-[14px] flex items-center justify-center text-amber-400 mt-0.5 flex-shrink-0 font-bold text-[10px]">★</div>
+                                      <span className="text-amber-400 font-bold text-[11px] mt-0.5 flex-shrink-0">★</span>
                                       <div className="text-xs text-slate-600">
-                                        <p className="font-bold text-slate-500 uppercase tracking-tighter text-[10px]">Bijzonderheden</p>
-                                        <p>{customer.profile.bijzondereKenmerken}</p>
+                                        <p className="font-bold text-slate-400 uppercase tracking-tighter text-[9px]">Bijzonderheden</p>
+                                        <p className="leading-snug">{klant['Bijzondere Kenmerken']}</p>
                                       </div>
                                     </div>
                                   )}
@@ -2162,136 +1807,63 @@ export default function App() {
                             </td>
 
                             {/* Bezichtigingen Column */}
-                            <td className="px-6 py-6 border-l border-slate-300 align-top min-w-[300px]">
-                              <div className="space-y-4 max-h-[240px] overflow-y-auto pr-2 custom-scrollbar">
-                                {customer.viewings.map((v, i) => (
-                                  <button
-                                    key={i}
-                                    onClick={() => setSelectedViewing({
-                                      ...v,
-                                      customerName: customer.name,
-                                      details: "Extra informatie over deze bezichtiging: De klant was erg enthousiast over de lichtinval en de ruime keuken. Er is interesse getoond in een tweede bezichtiging."
-                                    })}
-                                    className="w-full text-left flex flex-col pb-2 border-b border-slate-100 last:border-0 last:pb-0 hover:bg-slate-50/50 p-2 -m-2 rounded-lg transition-colors group"
-                                  >
-                                    <div className="flex items-center gap-2 text-[#2d3e50] font-medium leading-tight group-hover:text-blue-600 transition-colors">
-                                      <span className="text-lg flex-shrink-0">🏡</span>
-                                      <span className="text-sm md:text-base">{v.address}</span>
-                                    </div>
-                                    <div className="flex items-center justify-between ml-7 mt-1">
-                                      <span className="text-slate-500 text-xs md:text-sm">{v.dateTime}</span>
-                                      <span className="badge badge-green text-[8px] py-0 px-1 flex items-center gap-0.5 leading-none h-3.5 whitespace-nowrap">
-                                        <Search size={7} /> Bekijk onderzoek
-                                      </span>
-                                    </div>
-                                  </button>
-                                ))}
-                                {customer.totalViewings > customer.viewings.length && (
-                                  <div className="ml-7 pt-2">
-                                    <button className="text-blue-600 hover:text-blue-800 underline text-sm font-bold transition-colors">
-                                      + {customer.totalViewings - customer.viewings.length} meer bezichtigingen...
-                                    </button>
-                                    <span className="text-slate-400 text-xs ml-1 block mt-0.5">(Totaal {customer.totalViewings} bezichtigingen)</span>
-                                  </div>
-                                )}
+                            <td className="px-6 py-5 border-l border-slate-300 align-top min-w-[260px]">
+                              <div className="flex flex-col gap-2">
+                                <button
+                                  className="flex items-center gap-2 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-xl px-3 py-2 transition-all border border-dashed border-emerald-300 hover:border-emerald-500 w-full justify-center font-semibold text-sm"
+                                  title="Bezichtiging toevoegen"
+                                >
+                                  <span className="w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center font-bold text-lg leading-none">+</span>
+                                  Bezichtiging toevoegen
+                                </button>
                               </div>
                             </td>
 
-                            {/* Bod Column */}
-                            <td
-                              className="px-6 py-6 border-l border-slate-300 align-top cursor-pointer hover:bg-slate-50/50 transition-colors"
-                              onClick={() => setSelectedCustomer(customer)}
-                            >
-                              <div className="space-y-4">
-                                {customer.offers.map((offer, i) => (
-                                  <div key={i} className="flex flex-col gap-1">
-                                    <span className="text-[#2d3e50] font-medium">
-                                      Bod {offer.amount} op {offer.address}
-                                    </span>
-                                    <div className="flex gap-2">
-                                      <span className={`badge ${offer.status === 'Groen' ? 'badge-green' :
-                                          offer.status === 'Afgewezen' ? 'badge-red' :
-                                            offer.status === 'Rood' ? 'badge-red' :
-                                              offer.status === 'Geaccepteerd' ? 'badge-green' :
-                                                'badge-green'
-                                        }`}>
-                                        {offer.status === 'Groen' ? (
-                                          <span className="flex items-center gap-1">
-                                            Agenda bijgewerkt <CheckCircle2 size={12} className="text-emerald-500" />
-                                          </span>
-                                        ) : offer.status}
-                                      </span>
-                                      {offer.status !== 'Geaccepteerd' && offer.status !== 'Groen' && <span className="badge badge-gray">status</span>}
-                                      {offer.status === 'Geaccepteerd' && (
-                                        <span className="badge badge-green flex items-center gap-1">
-                                          Agenda bijgewerkt <CheckCircle2 size={12} className="text-emerald-500" />
-                                        </span>
-                                      )}
-                                    </div>
-                                  </div>
-                                ))}
+                            {/* Biedingen Column */}
+                            <td className="px-6 py-5 border-l border-slate-300 align-top min-w-[220px]">
+                              <div className="flex flex-col gap-2">
+                                <button
+                                  className="flex items-center gap-2 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-xl px-3 py-2 transition-all border border-dashed border-emerald-300 hover:border-emerald-500 w-full justify-center font-semibold text-sm"
+                                  title="Bieding toevoegen"
+                                >
+                                  <span className="w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center font-bold text-lg leading-none">+</span>
+                                  Bieding toevoegen
+                                </button>
                               </div>
                             </td>
 
                             {/* Bouwkundige Keuring Column */}
-                            <td
-                              className="px-6 py-6 border-l border-slate-300 align-top cursor-pointer hover:bg-slate-50/50 transition-colors"
-                              onClick={() => setSelectedCustomer(customer)}
-                            >
-                              <div className="flex flex-col items-center justify-center h-full gap-1">
-                                {customer.structuralInspection?.status === 'Nee' && (
-                                  <span className="text-xl text-[#2d3e50]">Nee</span>
-                                )}
-                                {customer.structuralInspection?.status === 'Ingepland' && (
-                                  <>
-                                    <span className="badge badge-amber">Ingepland</span>
-                                    <span className="text-slate-600 text-sm">{customer.structuralInspection.date}</span>
-                                    {customer.structuralInspection.inspectorName && (
-                                      <span className="text-slate-400 text-[10px] italic">{customer.structuralInspection.inspectorName}</span>
-                                    )}
-                                  </>
-                                )}
-                                {customer.structuralInspection?.status === 'Gereed' && (
-                                  <>
-                                    <div className="flex items-center gap-2 text-xl font-semibold text-[#2d3e50]">
-                                      Gereed <CheckCircle2 className="text-emerald-500" size={24} />
-                                    </div>
-                                    <span className="text-slate-600 text-sm">{customer.structuralInspection.date}</span>
-                                    {customer.structuralInspection.inspectorName && (
-                                      <span className="text-slate-400 text-[10px] italic">{customer.structuralInspection.inspectorName}</span>
-                                    )}
-                                  </>
-                                )}
+                            <td className="px-6 py-5 border-l border-slate-300 align-top min-w-[220px]">
+                              <div className="flex flex-col gap-2">
+                                <button
+                                  className="flex items-center gap-2 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-xl px-3 py-2 transition-all border border-dashed border-emerald-300 hover:border-emerald-500 w-full justify-center font-semibold text-sm"
+                                  title="Bouwkundige keuring toevoegen"
+                                >
+                                  <span className="w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center font-bold text-lg leading-none">+</span>
+                                  Keuring toevoegen
+                                </button>
                               </div>
                             </td>
 
-                            {/* Contract Column */}
-                            <td className="px-6 py-6 border-l border-slate-300 align-top text-center">
-                              <div className="flex flex-col items-center justify-center h-full gap-1">
-                                {customer.contract.status === 'Nee' && (
-                                  <span className="text-xl text-[#2d3e50]">Nee</span>
-                                )}
-                                {customer.contract.status === 'afgewezen' && (
-                                  <>
-                                    <span className="badge badge-amber">afgewezen</span>
-                                    <span className="text-slate-600 text-sm">{customer.contract.date}</span>
-                                  </>
-                                )}
-                                {customer.contract.status === 'Ja Getekend' && (
-                                  <>
-                                    <div className="flex items-center gap-2 text-xl font-semibold text-[#2d3e50]">
-                                      Ja Getekend <CheckCircle2 className="text-emerald-500" size={24} />
-                                    </div>
-                                    <span className="text-slate-600 text-sm">{customer.contract.date}</span>
-                                  </>
-                                )}
+                            {/* Concept Koopcontract Column */}
+                            <td className="px-6 py-5 border-l border-slate-300 align-top text-center min-w-[220px]">
+                              <div className="flex flex-col gap-2">
+                                <button
+                                  className="flex items-center gap-2 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-xl px-3 py-2 transition-all border border-dashed border-emerald-300 hover:border-emerald-500 w-full justify-center font-semibold text-sm"
+                                  title="Concept koopcontract toevoegen"
+                                >
+                                  <span className="w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center font-bold text-lg leading-none">+</span>
+                                  Contract toevoegen
+                                </button>
                               </div>
                             </td>
+
                           </tr>
                         ))}
                       </tbody>
                     </table>
                   </div>
+                  )}
                 </motion.div>
               ) : activeView === 'nieuwste' ? (
                 <motion.div
